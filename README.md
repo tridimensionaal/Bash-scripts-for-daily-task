@@ -1,1 +1,1 @@
-# Bash-scripts-for-daily-task
+# Bash scripts for daily task
