@@ -1,0 +1,37 @@
+#! /bin/bash
+
+text=""
+case $1 in
+    # python 
+    **.py)
+    text=$(which python3)
+        echo "#!"$text | cat > $1; chmod 744 $1
+        ;;
+
+    # javascript 
+    **.js)
+    text=$(which node)
+        echo "#!" $text | cat > $1; chmod 774 $1
+        ;;
+
+    # bash  
+    **.sh)
+        text=$(which bash)
+        echo "#!"$text | cat > $1; chmod 744 $1
+        ;;
+
+    # c and c++ 
+    **.c | **.cpp)
+        text="#include<stdio.h>\n\n
+        int main(){\n
+        }
+        "
+        echo -e $text | cat > $1;
+        ;;
+
+    # else 
+    *)
+        touch $1
+    ;;
+esac
+

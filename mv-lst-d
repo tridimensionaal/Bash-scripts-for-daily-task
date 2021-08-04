@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# the latest downloaded file
+last=$(ls -t1 ~/Downloads | head -n 1)
+
+# move the last to actual dir
+mv ~/Downloads/$last .
