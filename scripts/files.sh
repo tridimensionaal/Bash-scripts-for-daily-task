@@ -1,26 +1,24 @@
 #!/bin/bash
 
 action(){
-    read -p ">> " -n 1 option
-
-    case $option in
+    case $2 in
         1)
             xdg-open $1
-            return 1
+            echo 1
             ;;
         2)
-            more $1
-            return 1
+            head $1
+            echo 1
             ;;
         3)
             rm $1
-            return 0
+            echo 0
             ;;
         4)
-            return 0
+            echo 0
             ;;
         *)
-            return 0
+            echo 1
             ;;
     esac
 }
@@ -35,7 +33,9 @@ process_file(){
         echo "- 2: View the content of the file (more)"
         echo "- 3: Remove the file"
         echo "- 4: End"
-        bol=$(action $1)
+
+        read -p ">> "  option
+        bol=$(action $1 $option)
     done
 }
 
