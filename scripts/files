@@ -35,7 +35,7 @@ process_file(){
         echo "- 4: Go to the next file"
 
         read -p ">> "  option
-        action $1 $option
+        action "$1" $option
         bol=$?
     done
 }
@@ -43,9 +43,9 @@ process_file(){
 
 for file in *
 do
-    if [ -f $file ]
+    if [ -f "$file" ]
     then
-        process_file $file
+        process_file "$file"
     fi 
 done
 
