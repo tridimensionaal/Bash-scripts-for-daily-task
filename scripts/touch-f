@@ -10,7 +10,7 @@ case "$1" in
 
     # javascript 
     **.js)
-    text=$(which node)
+        text=$(which node)
         echo "#!" $text | cat > "$1"; chmod 774 "$1"
         ;;
 
@@ -22,23 +22,16 @@ case "$1" in
 
     # c
     **.c)
-        text="#include<stdio.h>\n\n
-        int main(){\n
-        }
+        text="#include<stdio.h>\n\nint main(){\n}
         "
         echo -e $text | cat > "$1";
         ;;
 
     **.cpp)
-        text="#include<iostream>\n\n
-        using namespace std;\n\n
-        int main(){\n
-        }
+        text="#include<iostream>\n\nusing namespace std;\n\nint main(){\n}
         "
         echo -e $text | cat > "$1";
         ;;
-
-
 
     # else 
     *)
