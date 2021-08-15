@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# the latest picture
+last=$(ls -t1 ~/Pictures | head -n 1)
+
+# send picture via mutt
+mutt -s "The latest picture" -a ~/Pictures/"$last" -- $1 < /dev/null 
+

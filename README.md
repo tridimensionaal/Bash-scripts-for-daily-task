@@ -6,6 +6,7 @@
       - [touch-f](#touch-f)
       - [mv-lst-d](#mv-last-d)
       - [files](#files)
+      - [snd-lst-p](#snd-lst-p)
   
 ## Description
 - **Bash scripts for daily tasks** is a list of shell scripts to automate simple tasks of the daily routine.
@@ -29,5 +30,13 @@
     ```bash
       ./files
     ```
+- #### snd-lst-p
+  - **Description**: Send via email the last file added to the *~/Pictures* directory.
+  - **How to use**: 
+    ```bash
+      ./snd-lst-p mail.to.send@file.com
+    ```
+  - **Considerations**: The script uses `mutt`. The following [page](https://www.garron.me/en/go2linux/send-mail-gmail-mutt.html) explains how to install and configure mutt with gmail.
+ 
     
 
