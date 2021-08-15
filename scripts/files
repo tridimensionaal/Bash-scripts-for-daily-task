@@ -30,7 +30,7 @@ process_file(){
         echo $(file "$1")
         echo "What do yo want to do?"
         echo "- 1: Open file (xdg-open)"
-        echo "- 2: View the content of the file (more)"
+        echo "- 2: View the content of the file (less)"
         echo "- 3: Remove the file"
         echo "- 4: Go to the next file"
 

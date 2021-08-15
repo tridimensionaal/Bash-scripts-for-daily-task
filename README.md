@@ -31,7 +31,7 @@
       ./files
     ```
 - #### snd-lst-p
-  - **Description**: Send via email the last file added to the *~/Pictures* directory.
+  - **Description**: Sends via email the last file added to the *~/Pictures* directory.
   - **How to use**: 
     ```bash
       ./snd-lst-p mail.to.send@file.com
