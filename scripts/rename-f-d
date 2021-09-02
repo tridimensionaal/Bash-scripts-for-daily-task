@@ -1,0 +1,6 @@
+#!/bin/bash
+
+dir_name=${PWD##*/}
+extension=${1##*.}
+
+mv $1 $dir_name.$extension

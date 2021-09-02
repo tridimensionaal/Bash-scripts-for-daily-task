@@ -7,6 +7,7 @@
       - [mv-lst-d](#mv-last-d)
       - [files](#files)
       - [snd-lst-p](#snd-lst-p)
+      - [rename-f-d](#rename-f-d)
   
 ## Description
 - **Bash scripts for daily tasks** is a list of shell scripts to automate simple tasks of the daily routine.
@@ -37,6 +38,14 @@
       ./snd-lst-p mail.to.send@file.com
     ```
   - **Considerations**: The script uses `mutt`. The following [page](https://www.garron.me/en/go2linux/send-mail-gmail-mutt.html) explains how to install and configure mutt with gmail.
+
+- #### rename-f-d
+  - **Description**: Rename the file to the name of the current directory, keeping the file extension.
+  - **How to use**: 
+    ```bash
+      ./rename-f-d file-to-be-renamed.extesion 
+    ```
+-
  
     
 
