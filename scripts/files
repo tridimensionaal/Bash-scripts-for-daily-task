@@ -48,4 +48,27 @@ do
         process_file "$file"
     fi 
 done
-
+# start shellcheck-all
+# 
+# In files line 30:
+#         echo $(file "$1")
+#              ^----------^ SC2046: Quote this to prevent word splitting.
+#              ^----------^ SC2005: Useless echo? Instead of 'echo $(cmd)', just use 'cmd'.
+# 
+# 
+# In files line 37:
+#         read -p ">> "  option
+#         ^--^ SC2162: read without -r will mangle backslashes.
+# 
+# 
+# In files line 38:
+#         action "$1" $option
+#                     ^-----^ SC2086: Double quote to prevent globbing and word splitting.
+# 
+# Did you mean: 
+#         action "$1" "$option"
+# 
+# For more information:
+#   https://www.shellcheck.net/wiki/SC2046 -- Quote this to prevent word splitt...
+#   https://www.shellcheck.net/wiki/SC2086 -- Double quote to prevent globbing ...
+#   https://www.shellcheck.net/wiki/SC2162 -- read without -r will mangle backs...
