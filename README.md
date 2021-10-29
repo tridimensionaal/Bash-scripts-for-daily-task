@@ -48,7 +48,7 @@
     ```
 
 - #### shellcheck-all
-  - **Description**: Applies the command `shellcheck` to all files in the current directory and adds a comment to each file that contain the command output for that file
+  - **Description**: Applies the command `shellcheck` to all files in the current directory and adds a comment to each file that contain the command (shellcheck) output for that file.
   - **How to use**: 
     ```bash
       ./shellcheck-all 
