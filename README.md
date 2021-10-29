@@ -8,6 +8,7 @@
       - [files](#files)
       - [snd-lst-p](#snd-lst-p)
       - [rename-f-d](#rename-f-d)
+      - [shellcheck-all](#shellcheck-all)
   
 ## Description
 - **Bash scripts for daily tasks** is a list of shell scripts to automate simple tasks of the daily routine.
