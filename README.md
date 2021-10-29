@@ -47,7 +47,7 @@
       ./rename-f-d file-to-be-renamed.extesion 
     ```
 
- - #### shellcheck-all
+- #### shellcheck-all
   - **Description**: Applies the command `shellcheck` to all files in the current directory and adds a comment to each file that contain the command output for that file
   - **How to use**: 
     ```bash
