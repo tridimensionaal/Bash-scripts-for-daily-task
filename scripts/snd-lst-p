@@ -3,7 +3,7 @@
 # the latest picture
 last=$(ls -t1 ~/Pictures | head -n 1)
 
-mutt -s "Last picture" -a ~/Pictures/"$last" -- $1 < /dev/null 
+mutt -s "Last picture" -a ~/Pictures/"$last" -- "$1" < /dev/null 
 
 # start shellcheck-all
 # 
@@ -11,14 +11,5 @@ mutt -s "Last picture" -a ~/Pictures/"$last" -- $1 < /dev/null
 # last=$(ls -t1 ~/Pictures | head -n 1)
 #        ^---------------^ SC2012: Use find instead of ls to better handle non-alphanumeric filenames.
 # 
-# 
-# In snd-lst-p line 6:
-# mutt -s "Last picture" -a ~/Pictures/"$last" -- $1 < /dev/null 
-#                                                 ^-- SC2086: Double quote to prevent globbing and word splitting.
-# 
-# Did you mean: 
-# mutt -s "Last picture" -a ~/Pictures/"$last" -- "$1" < /dev/null 
-# 
 # For more information:
 #   https://www.shellcheck.net/wiki/SC2012 -- Use find instead of ls to better ...
-#   https://www.shellcheck.net/wiki/SC2086 -- Double quote to prevent globbing ...

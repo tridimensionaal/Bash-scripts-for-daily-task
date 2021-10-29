@@ -27,15 +27,15 @@ process_file(){
     bol=1
     while [ $bol -eq 1 ]
     do
-        echo $(file "$1")
+        file "$1"
         echo "What do yo want to do?"
         echo "- 1: Open file (xdg-open)"
         echo "- 2: View the content of the file (less)"
         echo "- 3: Remove the file"
         echo "- 4: Go to the next file"
 
-        read -p ">> "  option
-        action "$1" $option
+        read -rp ">> "  option
+        action "$1" "$option"
         bol=$?
     done
 }
@@ -48,27 +48,3 @@ do
         process_file "$file"
     fi 
 done
-# start shellcheck-all
-# 
-# In files line 30:
-#         echo $(file "$1")
-#              ^----------^ SC2046: Quote this to prevent word splitting.
-#              ^----------^ SC2005: Useless echo? Instead of 'echo $(cmd)', just use 'cmd'.
-# 
-# 
-# In files line 37:
-#         read -p ">> "  option
-#         ^--^ SC2162: read without -r will mangle backslashes.
-# 
-# 
-# In files line 38:
-#         action "$1" $option
-#                     ^-----^ SC2086: Double quote to prevent globbing and word splitting.
-# 
-# Did you mean: 
-#         action "$1" "$option"
-# 
-# For more information:
-#   https://www.shellcheck.net/wiki/SC2046 -- Quote this to prevent word splitt...
-#   https://www.shellcheck.net/wiki/SC2086 -- Double quote to prevent globbing ...
-#   https://www.shellcheck.net/wiki/SC2162 -- read without -r will mangle backs...

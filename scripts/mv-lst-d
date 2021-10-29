@@ -5,6 +5,7 @@ last=$(ls -t1 ~/Downloads | head -n 1)
 
 # move the last to actual dir
 mv ~/Downloads/"$last" .
+
 # start shellcheck-all
 # 
 # In mv-lst-d line 4:

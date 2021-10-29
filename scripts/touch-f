@@ -5,32 +5,40 @@ case "$1" in
     # python 
     **.py)
     text=$(which python3)
-        echo "#!"$text | cat > "$1"; chmod 744 "$1"
+        printf "#!%s\n" "$text" | cat > "$1"; chmod 744 "$1"
         ;;
 
     # javascript 
     **.js)
         text=$(which node)
-        echo "#!" $text | cat > "$1"; chmod 774 "$1"
+        printf "#!%s\n" "$text" | cat > "$1"; chmod 774 "$1"
         ;;
 
     # bash  
     **.sh)
         text=$(which bash)
-        echo "#!"$text | cat > "$1"; chmod 744 "$1"
+        printf "#!%s" "$text" | cat > "$1"; chmod 744 "$1"
         ;;
 
     # c
     **.c)
-        text="#include<stdio.h>\n\nint main(){\n}
+        text="#include<stdio.h>
+        
+        int main(){
+        }
         "
-        echo -e $text | cat > "$1";
+        printf "%s" "$text" | cat > "$1";
         ;;
 
     **.cpp)
-        text="#include<iostream>\n\nusing namespace std;\n\nint main(){\n}
+        text="#include<iostream>
+        
+        using namespace std;
+        
+        int main(){
+        }
         "
-        echo -e $text | cat > "$1";
+        printf "%s" "$text" | cat > "$1";
         ;;
 
     # else 
@@ -46,55 +54,14 @@ esac
 #            ^---^ SC2230: which is non-standard. Use builtin 'command -v' instead.
 # 
 # 
-# In touch-f line 8:
-#         echo "#!"$text | cat > "$1"; chmod 744 "$1"
-#                  ^---^ SC2086: Double quote to prevent globbing and word splitting.
-# 
-# Did you mean: 
-#         echo "#!""$text" | cat > "$1"; chmod 744 "$1"
-# 
-# 
 # In touch-f line 13:
 #         text=$(which node)
 #                ^---^ SC2230: which is non-standard. Use builtin 'command -v' instead.
-# 
-# 
-# In touch-f line 14:
-#         echo "#!" $text | cat > "$1"; chmod 774 "$1"
-#                   ^---^ SC2086: Double quote to prevent globbing and word splitting.
-# 
-# Did you mean: 
-#         echo "#!" "$text" | cat > "$1"; chmod 774 "$1"
 # 
 # 
 # In touch-f line 19:
 #         text=$(which bash)
 #                ^---^ SC2230: which is non-standard. Use builtin 'command -v' instead.
 # 
-# 
-# In touch-f line 20:
-#         echo "#!"$text | cat > "$1"; chmod 744 "$1"
-#                  ^---^ SC2086: Double quote to prevent globbing and word splitting.
-# 
-# Did you mean: 
-#         echo "#!""$text" | cat > "$1"; chmod 744 "$1"
-# 
-# 
-# In touch-f line 27:
-#         echo -e $text | cat > "$1";
-#                 ^---^ SC2086: Double quote to prevent globbing and word splitting.
-# 
-# Did you mean: 
-#         echo -e "$text" | cat > "$1";
-# 
-# 
-# In touch-f line 33:
-#         echo -e $text | cat > "$1";
-#                 ^---^ SC2086: Double quote to prevent globbing and word splitting.
-# 
-# Did you mean: 
-#         echo -e "$text" | cat > "$1";
-# 
 # For more information:
-#   https://www.shellcheck.net/wiki/SC2086 -- Double quote to prevent globbing ...
 #   https://www.shellcheck.net/wiki/SC2230 -- which is non-standard. Use builti...

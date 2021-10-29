@@ -3,17 +3,5 @@
 dir_name=${PWD##*/}
 extension=${1##*.}
 
-mv $1 $dir_name.$extension
-# start shellcheck-all
-# 
-# In rename-f-d line 6:
-# mv $1 $dir_name.$extension
-#    ^-- SC2086: Double quote to prevent globbing and word splitting.
-#       ^-------^ SC2086: Double quote to prevent globbing and word splitting.
-#                 ^--------^ SC2086: Double quote to prevent globbing and word splitting.
-# 
-# Did you mean: 
-# mv "$1" "$dir_name"."$extension"
-# 
-# For more information:
-#   https://www.shellcheck.net/wiki/SC2086 -- Double quote to prevent globbing ...
+mv "$1" "$dir_name.$extension"
+
