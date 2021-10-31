@@ -4,8 +4,13 @@ text=""
 case "$1" in
     # python 
     **.py)
-    text=$(which python3)
-        printf "#!%s\n" "$text" | cat > "$1"; chmod 744 "$1"
+        text1=$(which python3)
+        text2="def main():"
+        text3="    pass"
+        text4="if __name__ == \"__main__\":"
+        text5="    main()"
+        printf "#!%s\n\n%s\n%s\n\n\n%s\n%s\n" "$text1" "$text2" "$text3" "$text4" "$text5" | 
+            cat > "$1"; chmod 744 "$1"
         ;;
 
     # javascript 
@@ -22,23 +27,18 @@ case "$1" in
 
     # c
     **.c)
-        text="#include<stdio.h>
-        
-        int main(){
-        }
-        "
-        printf "%s" "$text" | cat > "$1";
+        text1="#include<stdio.h>"
+        text2="int main(){"
+        text3="}"
+        printf "%s\n\n%s\n%s" "$text1" "$text2" "$text3" | cat > "$1";
         ;;
 
     **.cpp)
-        text="#include<iostream>
-        
-        using namespace std;
-        
-        int main(){
-        }
-        "
-        printf "%s" "$text" | cat > "$1";
+        text1="#include<iostream>"
+        text2="using namespace std;"
+        text3="int main(){"
+        text4="}"
+        printf "%s\n%s\n\n%s\n%s" "$text1" "$text2" "$text3" "$text4" | cat > "$1";
         ;;
 
     # else 
@@ -50,16 +50,16 @@ esac
 # start shellcheck-all
 # 
 # In touch-f line 7:
-#     text=$(which python3)
-#            ^---^ SC2230: which is non-standard. Use builtin 'command -v' instead.
+#         text1=$(which python3)
+#                 ^---^ SC2230: which is non-standard. Use builtin 'command -v' instead.
 # 
 # 
-# In touch-f line 13:
+# In touch-f line 18:
 #         text=$(which node)
 #                ^---^ SC2230: which is non-standard. Use builtin 'command -v' instead.
 # 
 # 
-# In touch-f line 19:
+# In touch-f line 24:
 #         text=$(which bash)
 #                ^---^ SC2230: which is non-standard. Use builtin 'command -v' instead.
 # 
