@@ -4,7 +4,7 @@ text=""
 case "$1" in
     # python 
     **.py)
-        text1=$(which python3)
+        text1=$(command -v python3)
         text2="def main():"
         text3="    pass"
         text4="if __name__ == \"__main__\":"
@@ -15,13 +15,13 @@ case "$1" in
 
     # javascript 
     **.js)
-        text=$(which node)
+        text=$(command -v node)
         printf "#!%s\n" "$text" | cat > "$1"; chmod 774 "$1"
         ;;
 
     # bash  
     **.sh)
-        text=$(which bash)
+        text=$(command -v bash)
         printf "#!%s" "$text" | cat > "$1"; chmod 744 "$1"
         ;;
 
@@ -47,21 +47,3 @@ case "$1" in
     ;;
 esac
 
-# start shellcheck-all
-# 
-# In touch-f line 7:
-#         text1=$(which python3)
-#                 ^---^ SC2230: which is non-standard. Use builtin 'command -v' instead.
-# 
-# 
-# In touch-f line 18:
-#         text=$(which node)
-#                ^---^ SC2230: which is non-standard. Use builtin 'command -v' instead.
-# 
-# 
-# In touch-f line 24:
-#         text=$(which bash)
-#                ^---^ SC2230: which is non-standard. Use builtin 'command -v' instead.
-# 
-# For more information:
-#   https://www.shellcheck.net/wiki/SC2230 -- which is non-standard. Use builti...

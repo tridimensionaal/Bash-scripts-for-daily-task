@@ -55,5 +55,9 @@
     ```
   - **Considerations**: The script uses `shellcheck`. 
 
-    
-
+- #### mk-todo-md
+  - **Description**: Creates a TODO.md in the current directory. A TODO.md file is a markdown file that contains a list of things to do.
+  - **How to use**: 
+    ```bash
+      ./mk-todo-md 
+    ```
