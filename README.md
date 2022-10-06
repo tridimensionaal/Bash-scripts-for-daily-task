@@ -10,6 +10,7 @@
       - [rename-f-d](#rename-f-d)
       - [shellcheck-all](#shellcheck-all)
       - [wifi](#wifi)
+      - [init-tmux](#init-tmux)
   
 ## Description
 - **Bash scripts for daily tasks** is a list of shell scripts to automate simple tasks of the daily routine.
