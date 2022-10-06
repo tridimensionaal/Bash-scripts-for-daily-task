@@ -9,6 +9,7 @@
       - [snd-lst-p](#snd-lst-p)
       - [rename-f-d](#rename-f-d)
       - [shellcheck-all](#shellcheck-all)
+      - [wifi](#wifi)
   
 ## Description
 - **Bash scripts for daily tasks** is a list of shell scripts to automate simple tasks of the daily routine.
@@ -61,3 +62,19 @@
     ```bash
       ./mk-todo-md 
     ```
+
+- #### wifi
+  - **Description**: Turns off wifi if connected, otherwise turn it on.
+  - **How to use**: 
+    ```bash
+      ./wifi
+    ```
+  - **Considerations**: The script uses `nmcli`. 
+
+- #### init-tmux
+  - **Description**: Creates a new tmux session, adds windows to it and starts the session.
+  - **How to use**: 
+    ```bash
+      ./init-tmux
+    ```
+  - **Considerations**: The script uses `tmux`. 

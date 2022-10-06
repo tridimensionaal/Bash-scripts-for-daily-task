@@ -20,12 +20,4 @@ List of things to do in the current project.
 - [x] Create my first TODO.md
 "
 
-printf "$content" > TODO.md
-# start shellcheck-all
-# 
-# In mk-todo-md.sh line 23:
-# printf "$content" > TODO.md
-#        ^--------^ SC2059: Don't use variables in the printf format string. Use printf "..%s.." "$foo".
-# 
-# For more information:
-#   https://www.shellcheck.net/wiki/SC2059 -- Don't use variables in the printf...
+printf "%s" "$content" > TODO.md

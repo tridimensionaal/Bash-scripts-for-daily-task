@@ -1,0 +1,20 @@
+#!/bin/bash
+session="basic"
+tmux new-session -d -s $session
+
+window=0
+tmux rename-window -t $session:$window 'htop'
+tmux send-keys -t $session:$window 'htop' Enter
+
+window=1
+tmux new-window -t $session:$window -n 'src'
+
+window=2
+tmux new-window -t $session:$window -n 'bin'
+
+window=3
+tmux new-window -t $session:$window -n 'other'
+
+tmux attach-session -t $session
+
+
