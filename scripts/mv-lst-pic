@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+mv-lst-file --input-dir "$HOME/Pictures/Screenshots" --output-dir ./image.png

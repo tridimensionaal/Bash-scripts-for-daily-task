@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 print_usage() {
     printf "usage: mv-lst-file --input-dir DIR --output-dir DIR\n"
     printf "\tmove the most recently modified file from input dir to output dir\n"
