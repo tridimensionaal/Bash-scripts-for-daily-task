@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+assign_body() {
+    PYTHON_BODY=$(
+        cat <<'EOF'
+def main():
+  pass
+
+
+if __name__ == "__main__":
+  main()
+EOF
+    )
+
+    MARKDOWN_BODY=$(
+        cat <<'EOF'
+# title
+## first section
+some text and a [link](https://github.com/tridimensionaal)
+EOF
+    )
+
+    BASH_BODY="#!/usr/bin/env bash"
+
+    case "$1" in
+    # python
+    **.py)
+        body_file="$PYTHON_BODY"
+        ;;
+
+    # bash
+    **.sh)
+        body_file="$BASH_BODY"
+        ;;
+    # markdown
+    **.md)
+        body_file="$MARKDOWN_BODY"
+        ;;
+    # else
+    *)
+        body_file=""
+        ;;
+    esac
+
+    printf "%s" "$body_file"
+}
+
+print_usage() {
+    cat >&2 <<'EOF'
+usage: touch-f FILE
+
+examples:
+  touch-f script.py
+  touch-f app.js
+  touch-f tool.sh
+  touch-f main.c
+  touch-f main.cpp
+EOF
+}
+
+main() {
+
+    case "${1:-}" in
+    -h | --help)
+        print_usage
+        exit 0
+        ;;
+    -*)
+        echo "Unknown option: $1" >&2
+        print_usage
+        exit 2
+        ;;
+    esac
+
+    # check if the filename is present
+    if [[ $# -ne 1 ]]; then
+        print_usage
+        exit 2
+    fi
+
+    file="$1"
+
+    body_file=$(assign_body "$file")
+    printf "%s" "$body_file" >"$file"
+}
+
+main "$@"
