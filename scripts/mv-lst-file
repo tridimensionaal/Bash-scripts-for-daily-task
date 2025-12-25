@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+
+print_usage() {
+    printf "usage: mv-lst-file --input-dir DIR --output-dir DIR\n"
+    printf "\tmove the most recently modified file from input dir to output dir\n"
+}
+
+mv_lst_file() {
+    src_dir="$1"
+    dst_dir="$2"
+
+    # move the most recently modified file from src_dir into dst_dir.
+    # 1) list files with their mtime as "timestamp\tpath\0" (NUL-delimited)
+    # 2) sort newest first and take the first entry (NUL-aware)
+    # 3) use read -d '' to avoid NUL loss in command substitution
+    # 4) extract the path field to get the file name (NUL-aware)
+    IFS=$'\t' read -r -d '' _ last_file_name < <(
+        find "$src_dir" -maxdepth 1 -type f \
+            -printf '%T@\t%p\0' |
+            sort -z -nr | head -z -n 1
+    )
+
+    if [[ -z "$last_file_name" ]]; then
+        echo "No files found in $src_dir" >&2
+        exit 1
+    fi
+
+    mv -- "$last_file_name" "$dst_dir"
+
+}
+
+main() {
+
+    src_dir=""
+    dst_dir=""
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+        -i | --input-dir)
+            shift
+            src_dir=${1:-}
+            ;;
+        -o | --output-dir)
+            shift
+            dst_dir=${1:-}
+            ;;
+        -h | --help)
+            print_usage
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            print_usage
+            exit 2
+            ;;
+        esac
+        shift
+    done
+
+    if [[ -z "$src_dir" || -z "$dst_dir" ]]; then
+        echo "Both --input-dir and --output-dir are required" >&2
+        exit 2
+    fi
+
+    mv_lst_file "$src_dir" "$dst_dir"
+}
+
+main "$@"

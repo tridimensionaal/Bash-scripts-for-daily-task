@@ -1,16 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# the latest downloaded file
-last=$(ls -t1 ~/Downloads | head -n 1)
+set -euo pipefail
 
-# move the last to actual dir
-mv ~/Downloads/"$last" .
-
-# start shellcheck-all
-# 
-# In mv-lst-d line 4:
-# last=$(ls -t1 ~/Downloads | head -n 1)
-#        ^----------------^ SC2012: Use find instead of ls to better handle non-alphanumeric filenames.
-# 
-# For more information:
-#   https://www.shellcheck.net/wiki/SC2012 -- Use find instead of ls to better ...
+mv-lst-file --input-dir "$HOME/Downloads" --output-dir "."

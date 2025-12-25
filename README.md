@@ -1,81 +1,52 @@
 # Bash scripts for daily tasks
----
-### Contents:
-  - [Description](#Description)
-  - [Scripts](#Scripts)
-      - [touch-f](#touch-f)
-      - [mv-lst-d](#mv-last-d)
-      - [files](#files)
-      - [snd-lst-p](#snd-lst-p)
-      - [rename-f-d](#rename-f-d)
-      - [shellcheck-all](#shellcheck-all)
-      - [wifi](#wifi)
-      - [init-tmux](#init-tmux)
-  
-## Description
-- **Bash scripts for daily tasks** is a list of shell scripts to automate simple tasks of the daily routine.
 
-### Scripts
-- #### touch-f
-  - **Description**: Creates a files in the current directory and depending on their extesion (.py, .js, .sh, .c or .cpp) adds some functionalities.
-  - **How to use**: 
-    ```bash
-       ./touch-f file-name.extension
-    ```
-- #### mv-lst-d
-  - **Description**: Move the last file added to the *~/Downloads* directory to the actual directory.
-  - **How to use**: 
-    ```bash
-       ./mv-lst-d
-    ```
-- #### files
-  - **Description**: Scans all the files of the current directory and for each one performs some actions (open the file, see the content of the fie or delete the file) depending of your choice.
-  - **How to use**: 
-    ```bash
-      ./files
-    ```
-- #### snd-lst-p
-  - **Description**: Sends via email the last file added to the *~/Pictures* directory.
-  - **How to use**: 
-    ```bash
-      ./snd-lst-p mail.to.send@file.com
-    ```
-  - **Considerations**: The script uses `mutt`. The following [page](https://www.garron.me/en/go2linux/send-mail-gmail-mutt.html) explains how to install and configure mutt with gmail.
+Small, focused bash scripts for common daily workflows.
 
-- #### rename-f-d
-  - **Description**: Rename the file to the name of the current directory, keeping the file extension.
-  - **How to use**: 
-    ```bash
-      ./rename-f-d file-to-be-renamed.extesion 
-    ```
+## Layout
+- `scripts/` is the source of truth for all scripts
+- `tools/` contains helper utilities (not meant to be on PATH)
 
-- #### shellcheck-all
-  - **Description**: Applies the command `shellcheck` to all files in the current directory and adds a comment to each file that contain the command (shellcheck) output for that file.
-  - **How to use**: 
-    ```bash
-      ./shellcheck-all 
-    ```
-  - **Considerations**: The script uses `shellcheck`. 
+## Setup
+Create symlinks to `~/bin` so the scripts are on your PATH:
 
-- #### mk-todo-md
-  - **Description**: Creates a TODO.md in the current directory. A TODO.md file is a markdown file that contains a list of things to do.
-  - **How to use**: 
-    ```bash
-      ./mk-todo-md 
-    ```
+```sh
+./tools/link-bin.sh
+```
 
-- #### wifi
-  - **Description**: Turns off wifi if connected, otherwise turn it on.
-  - **How to use**: 
-    ```bash
-      ./wifi
-    ```
-  - **Considerations**: The script uses `nmcli`. 
+Make sure `~/bin` is in your PATH (usually via `~/.bashrc` or `~/.zshrc`).
 
-- #### init-tmux
-  - **Description**: Creates a new tmux session, adds windows to it and starts the session.
-  - **How to use**: 
-    ```bash
-      ./init-tmux
-    ```
-  - **Considerations**: The script uses `tmux`. 
+## Scripts
+
+### mv-lst-file
+Move the most recently modified file from an input directory to an output directory.
+
+```sh
+mv-lst-file --input-dir ~/Downloads --output-dir .
+```
+
+### mv-lst-d
+wrapper for a common preset: move the most recently modified file from `~/Downloads` to the current directory. Usually, the most recently modified file means the latest downloaded.
+
+```sh
+mv-lst-d
+```
+
+equivalent to:
+
+```sh
+mv-lst-file --input-dir ~/Pictures/Screenshots --output-dir .
+```
+
+
+### mv-lst-pic
+wrapper for a common preset: move the latest screenshot (from the directory `~/Pictures/Screenshots/` into the current directory with the name `image.png`
+
+```sh
+mv-lst-picture
+```
+
+equivalent to:
+
+```sh
+mv-lst-file --input-dir ~/Pictures/Screenshots --output-dir ./image.png
+```
