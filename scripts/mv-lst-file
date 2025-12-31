@@ -9,8 +9,16 @@ print_usage() {
         printf "%s\n\n" "$extra_message" >&2
     fi
 
-    printf "usage: mv-lst-file --input-dir DIR --output-dir DIR\n" >&2
-    printf "\tmove the most recently modified file from input dir to output dir\n" >&2
+    cat >&2 <<'EOF'
+usage: mv-lst-file --input-dir DIR --output-dir DIR
+
+move the most recently modified file from input dir to output dir
+
+examples:
+    mv-lst-file --input-dir "$HOME/Downloads" --output-dir "."
+    mv-lst-file --input-dir "$HOME/Pictures/Screenshots" --output-dir ./image.png
+EOF
+
 }
 
 mv_lst_file() {
