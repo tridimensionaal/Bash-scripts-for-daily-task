@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+print_usage() {
+    extra_message="${1:-}"
+
+    if [[ -n "$extra_message" ]]; then
+        printf "%s\n\n" "$extra_message" >&2
+    fi
+
+    printf "usage: clip-to-image\n" >&2
+    printf "\tcheck if the clipboard contains an image and save it as\n" >&2
+    printf "\timage.<format>, where <format> is the image mime subtype\n" >&2
+    printf "\tlike png, jpeg, etc.\n" >&2
+}
+
+check_session_and_tool() {
+    if [[ "${XDG_SESSION_TYPE:-}" == "wayland" ]] &&
+        command -v wl-paste >/dev/null; then
+
+        image_type=$(wl-paste --list-types | grep '^image/' | head -n1 || true)
+        clip_tool="wl"
+
+    elif command -v xclip >/dev/null; then
+        image_type=$(
+            xclip -selection clipboard -t TARGETS -o 2>/dev/null |
+                grep '^image/' | head -n1 || true
+        )
+        clip_tool="xclip"
+    else
+        print_usage "No clipboard tool available"
+        exit 1
+    fi
+
+    if [[ -z "$image_type" ]]; then
+        print_usage "No image in clipboard"
+        exit 1
+    fi
+
+    printf "%s\t%s\n" "$image_type" "$clip_tool"
+}
+
+from_clipboard_to_file() {
+    image_type="$1"
+    clip_tool="$2"
+    case "$clip_tool" in
+    wl)
+        wl-paste --type "$image_type" >"image.${image_type#image/}"
+        ;;
+    xclip)
+        xclip -selection clipboard -t "$image_type" -o >"image.${image_type#image/}"
+        ;;
+    esac
+
+}
+
+main() {
+    # derive image_type and clip_tool from var
+    IFS=$'\t' read -r image_type clip_tool < <(check_session_and_tool)
+
+    from_clipboard_to_file "$image_type" "$clip_tool"
+}
+
+main "$@"
