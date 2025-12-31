@@ -2,6 +2,19 @@
 
 set -euo pipefail
 
+print_usage() {
+    cat >&2 <<'EOF'
+usage: touch-f FILE
+
+examples:
+  touch-f script.py
+  touch-f app.js
+  touch-f tool.sh
+  touch-f main.c
+  touch-f main.cpp
+EOF
+}
+
 assign_body() {
     PYTHON_BODY=$(
         cat <<'EOF'
@@ -17,8 +30,17 @@ EOF
     MARKDOWN_BODY=$(
         cat <<'EOF'
 # title
+
+some text
+
 ## first section
 some text and a [link](https://github.com/tridimensionaal)
+
+### second section
+
+a list
+- [ ] item
+  - [ ] sub item
 EOF
     )
 
@@ -45,19 +67,6 @@ EOF
     esac
 
     printf "%s" "$body_file"
-}
-
-print_usage() {
-    cat >&2 <<'EOF'
-usage: touch-f FILE
-
-examples:
-  touch-f script.py
-  touch-f app.js
-  touch-f tool.sh
-  touch-f main.c
-  touch-f main.cpp
-EOF
 }
 
 main() {
