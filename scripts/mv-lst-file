@@ -3,8 +3,14 @@
 set -euo pipefail
 
 print_usage() {
-    printf "usage: mv-lst-file --input-dir DIR --output-dir DIR\n"
-    printf "\tmove the most recently modified file from input dir to output dir\n"
+    extra_message="${1:-}"
+
+    if [[ -n "$extra_message" ]]; then
+        printf "%s\n\n" "$extra_message" >&2
+    fi
+
+    printf "usage: mv-lst-file --input-dir DIR --output-dir DIR\n" >&2
+    printf "\tmove the most recently modified file from input dir to output dir\n" >&2
 }
 
 mv_lst_file() {
@@ -21,10 +27,11 @@ mv_lst_file() {
         find "$src_dir" -maxdepth 1 -type f \
             -printf '%T@\t%p\0' |
             sort -z -nr | head -z -n 1
-    )
+    ) || true
 
+    # check if last_file_name exists
     if [[ -z "$last_file_name" ]]; then
-        echo "No files found in $src_dir" >&2
+        print_usage "No files found in $src_dir"
         exit 1
     fi
 
@@ -37,34 +44,48 @@ main() {
     src_dir=""
     dst_dir=""
 
+    # check flags
     while [[ $# -gt 0 ]]; do
         case "$1" in
         -i | --input-dir)
             shift
-            src_dir=${1:-}
+            src_dir="$1"
             ;;
         -o | --output-dir)
             shift
-            dst_dir=${1:-}
+            dst_dir="$1"
             ;;
         -h | --help)
             print_usage
             exit 0
             ;;
         *)
-            echo "Unknown option: $1" >&2
-            print_usage
+            print_usage "Unknown option: $1"
             exit 2
             ;;
         esac
         shift
     done
 
+    # check if src_dir and dst_dir exist
     if [[ -z "$src_dir" || -z "$dst_dir" ]]; then
-        echo "Both --input-dir and --output-dir are required" >&2
+        print_usage "Both --input-dir and --output-dir are required"
         exit 2
     fi
 
+    # check if src_dir is a dir
+    if [[ ! -d "$src_dir" ]]; then
+        print_usage "Input dir not found: $src_dir"
+        exit 2
+    fi
+
+    # check if dst_dir is a dir
+    if [[ ! -d "$dst_dir" ]]; then
+        print_usage "Output dir not found: $dst_dir"
+        exit 2
+    fi
+
+    # mv file
     mv_lst_file "$src_dir" "$dst_dir"
 }
 
