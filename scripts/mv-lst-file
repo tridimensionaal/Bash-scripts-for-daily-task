@@ -5,11 +5,13 @@ set -euo pipefail
 print_usage() {
     extra_message="${1:-}"
 
-    if [[ -n "$extra_message" ]]; then
-        printf "%s\n\n" "$extra_message" >&2
-    fi
+    {
 
-    cat >&2 <<'EOF'
+        if [[ -n "$extra_message" ]]; then
+            printf "%s\n\n" "$extra_message"
+        fi
+
+        cat <<'EOF'
 usage: mv-lst-file --input-dir DIR --output-dir DIR
 
 move the most recently modified file from input dir to output dir
@@ -18,6 +20,7 @@ examples:
     mv-lst-file --input-dir "$HOME/Downloads" --output-dir "."
     mv-lst-file --input-dir "$HOME/Pictures/Screenshots" --output-dir ./image.png
 EOF
+    } >&2
 
 }
 
