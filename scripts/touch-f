@@ -3,19 +3,28 @@
 set -euo pipefail
 
 print_usage() {
-    cat >&2 <<'EOF'
-usage: touch-f FILE
+    extra_message="${1:-}"
+
+    {
+        if [[ -n "$extra_message" ]]; then
+            printf "%s\n\n" "$extra_message"
+        fi
+        cat <<'EOF'
+usage: touch-f FILENAME
+
+create a new file with a starter template based on its extension
 
 examples:
+  touch-f script
   touch-f script.py
-  touch-f app.js
   touch-f tool.sh
-  touch-f main.c
-  touch-f main.cpp
+  touch-f main.md
 EOF
+    } >&2
 }
 
-assign_body() {
+create_file() {
+    file_name="$1"
     PYTHON_BODY=$(
         cat <<'EOF'
 def main():
@@ -47,26 +56,38 @@ EOF
     BASH_BODY="#!/usr/bin/env bash"
 
     case "$1" in
-    # python
-    **.py)
-        body_file="$PYTHON_BODY"
-        ;;
-
-    # bash
-    **.sh)
-        body_file="$BASH_BODY"
-        ;;
-    # markdown
-    **.md)
-        body_file="$MARKDOWN_BODY"
-        ;;
-    # else
+    # bash (no extension)
+    *.*) ;;
     *)
-        body_file=""
+        printf "%s\n" "$BASH_BODY" >"$file_name"
+        chmod +x "$file_name"
+        return
         ;;
     esac
 
-    printf "%s" "$body_file"
+    case "$1" in
+    # python
+    **.py)
+        printf "%s" "$PYTHON_BODY" >"$file_name"
+        return
+        ;;
+    # bash
+    **.sh)
+        printf "%s\n" "$BASH_BODY" >"$file_name"
+        chmod +x "$file_name"
+        return
+        ;;
+    # markdown
+    **.md)
+        printf "%s" "$MARKDOWN_BODY" >"$file_name"
+        return
+        ;;
+    # else
+    *)
+        printf "" >"$file_name"
+        return
+        ;;
+    esac
 }
 
 main() {
@@ -85,14 +106,18 @@ main() {
 
     # check if the filename is present
     if [[ $# -ne 1 ]]; then
-        print_usage
+        print_usage "Filename is required"
         exit 2
     fi
 
+    # check if the file exists
     file="$1"
+    if [[ -e "$file" ]]; then
+        print_usage "File already exists: $file"
+        exit 1
+    fi
 
-    body_file=$(assign_body "$file")
-    printf "%s" "$body_file" >"$file"
+    create_file "$file"
 }
 
 main "$@"
