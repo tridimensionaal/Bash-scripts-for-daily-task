@@ -1,72 +1,19 @@
 # Bash scripts for daily tasks
 
-Small, focused bash scripts for common daily workflows.
-
----
-
-## Layout
-- `scripts/` is the source of truth for all scripts
-- `tools/` contains helper utilities (not meant to be on PATH)
+Small, focused bash scripts for common workflows.
 
 ---
 
 ## Setup
-Create symlinks to `~/bin` so the scripts are on your PATH:
+Use `link-bin` to symlink all scripts under `scripts/` into `~/bin`:
 
 ```sh
-./tools/link-bin.sh
+./link-bin
 ```
 
-Make sure `~/bin` is in your PATH (usually via `~/.bashrc` or `~/.zshrc`).
+Make sure `~/bin` is in your PATH (via `~/.bashrc`, `~/.zshrc`, etc.).
 
 ---
 
 ## Scripts
-
-### mv-lst-file
-Move the most recently modified file from an input directory to an output directory.
-
-```sh
-mv-lst-file --input-dir ~/Downloads --output-dir .
-```
-
----
-
-### mv-lst-d
-wrapper for a common preset: move the most recently modified file from `~/Downloads` to the current directory. Usually, the most recently modified file means the latest downloaded.
-
-```sh
-mv-lst-d
-```
-
-equivalent to:
-
-```sh
-mv-lst-file --input-dir ~/Pictures/Screenshots --output-dir .
-```
-
----
-
-### mv-lst-pic
-wrapper for a common preset: move the latest screenshot (from the directory `~/Pictures/Screenshots/` into the current directory with the name `image.png`
-
-```sh
-mv-lst-picture
-```
-
-equivalent to:
-
-```sh
-mv-lst-file --input-dir ~/Pictures/Screenshots --output-dir ./image.png
-```
-
----
-
-### clip-to-image
-Save the clipboard image to `image.<format>` in the current directory.
-
-Requires a clipboard tool: `wl-paste` on Wayland or `xclip` on X11.
-
-```sh
-clip-to-image
-```
+Scripts are grouped by task/domain type under `scripts/`. See [scripts/README.md](/scripts/README.md) for more details.
