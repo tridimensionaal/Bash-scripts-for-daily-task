@@ -5,14 +5,22 @@ set -euo pipefail
 print_usage() {
     extra_message="${1:-}"
 
-    if [[ -n "$extra_message" ]]; then
-        printf "%s\n\n" "$extra_message" >&2
-    fi
+    local line="check if the clipboard contains an image and save it as image.<format>, \
+where <format> is the image mime subtype like png, jpeg, etc"
 
-    printf "usage: clip-to-image\n" >&2
-    printf "\tcheck if the clipboard contains an image and save it as\n" >&2
-    printf "\timage.<format>, where <format> is the image mime subtype\n" >&2
-    printf "\tlike png, jpeg, etc.\n" >&2
+    {
+        if [[ -n "$extra_message" ]]; then
+            printf "%s\n\n" "$extra_message"
+        fi
+        cat <<EOF
+usage: clip-to-image
+
+$line 
+
+example:
+    clip-to-image
+EOF
+    } >&2
 }
 
 check_session_and_tool() {
@@ -56,6 +64,19 @@ from_clipboard_to_file() {
 }
 
 main() {
+
+    case "${1:-}" in
+    -h | --help)
+        print_usage
+        exit 0
+        ;;
+    -*)
+        printf "Unknown option: %s" "$1" >&2
+        print_usage
+        exit 2
+        ;;
+    esac
+
     # derive image_type and clip_tool from var
     IFS=$'\t' read -r image_type clip_tool < <(check_session_and_tool)
 
