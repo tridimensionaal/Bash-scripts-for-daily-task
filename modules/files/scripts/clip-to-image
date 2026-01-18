@@ -83,4 +83,4 @@ main() {
     from_clipboard_to_file "$image_type" "$clip_tool"
 }
 
-main "$@"!/usr/bin/env bash
+main "$@"
