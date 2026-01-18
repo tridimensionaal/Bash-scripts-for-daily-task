@@ -1,0 +1,2 @@
+alias mv-lst-d='mv-lst-file --input-dir "$HOME/Downloads" --output-dir "."'
+alias mv-lst-pic='mv-lst-file --input-dir "$HOME/Pictures/Screenshots" --output-dir ./image.png'

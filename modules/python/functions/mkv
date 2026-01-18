@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
-
 print_usage() {
     extra_message="${1:-}"
 
@@ -46,7 +44,7 @@ create_venv() {
     python3 -m venv "$venv_name"
 }
 
-main() {
+mkv() {
     venv_name=""
 
     while [[ $# -gt 0 ]]; do
@@ -77,5 +75,3 @@ main() {
     check_tools
     create_venv "$venv_name"
 }
-
-main "$@"

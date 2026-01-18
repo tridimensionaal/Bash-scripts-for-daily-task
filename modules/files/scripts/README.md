@@ -13,6 +13,8 @@ Requires a clipboard tool: `wl-paste` on Wayland or `xclip` on X11.
 clip-to-image
 ```
 
+**TODO**: test on X11
+
 ---
 
 ## mv-lst-file
@@ -25,29 +27,9 @@ mv-lst-file --input-dir ~/Downloads --output-dir .
 
 ---
 
-## mv-lst-d
-Preset: move the most recently modified file from `~/Downloads` to the current
-directory.
-
-```sh
-mv-lst-d
-```
-
----
-
-## mv-lst-pic
-Preset: move the latest screenshot from `~/Pictures/Screenshots/` into the
-current directory as `image.png`.
-
-```sh
-mv-lst-pic
-```
-
----
 
 ## touch-f
-Create a new file with a starter template based on its extension. If the
-filename has no extension, it creates a bash script and makes it executable.
+Create a new file with a starter template based on its extension. If the filename has no extension, it creates a bash script and makes it executable.
 
 ```sh
 touch-f script
