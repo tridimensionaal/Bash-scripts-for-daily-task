@@ -2,7 +2,7 @@
 
 mkv() {
     local venv_name=""
-    local status=0
+    local exit_status=0
     local extra_message=""
 
     local usage='usage: mkv [NAME]
@@ -90,8 +90,8 @@ examples:
     fi
 
     if ! python3 -m venv "$venv_name"; then
-        status=$?
-        return "$status"
+        exit_status=$?
+        return "$exit_status"
     fi
 
     # shellcheck source=/dev/null
