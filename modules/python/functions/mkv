@@ -2,8 +2,6 @@
 
 mkv() {
     local venv_name=""
-    local exit_status=0
-    local extra_message=""
 
     local usage='usage: mkv [NAME]
 
@@ -17,31 +15,20 @@ examples:
     while [[ $# -gt 0 ]]; do
         case "$1" in
         -h | --help)
-            {
-                if [[ -n "$extra_message" ]]; then
-                    printf "%s\n\n" "$extra_message"
-                fi
-                printf "%s\n" "$usage"
-            } >&2
+            printf "%s\n" "$usage" >&2
             return 0
             ;;
         -*)
-            extra_message="unknown option: $1"
             {
-                if [[ -n "$extra_message" ]]; then
-                    printf "%s\n\n" "$extra_message"
-                fi
+                printf "unknown option: %s\n\n" "$1"
                 printf "%s\n" "$usage"
             } >&2
             return 2
             ;;
         *)
             if [[ -n "$venv_name" ]]; then
-                extra_message="too many arguments: $1"
                 {
-                    if [[ -n "$extra_message" ]]; then
-                        printf "%s\n\n" "$extra_message"
-                    fi
+                    printf "too many arguments: %s\n\n" "$1"
                     printf "%s\n" "$usage"
                 } >&2
                 return 2
@@ -57,43 +44,32 @@ examples:
     fi
 
     if ! command -v python3 >/dev/null 2>&1; then
-        extra_message="python3 not found in PATH"
         {
-            if [[ -n "$extra_message" ]]; then
-                printf "%s\n\n" "$extra_message"
-            fi
+            printf "%s\n\n" "python3 not found in PATH"
             printf "%s\n" "$usage"
         } >&2
         return 127
     fi
 
     if ! python3 -m venv -h >/dev/null 2>&1; then
-        extra_message="python3 venv module not available (try installing python3-venv)"
         {
-            if [[ -n "$extra_message" ]]; then
-                printf "%s\n\n" "$extra_message"
-            fi
+            printf "%s\n\n" "python3 venv module not available (try installing python3-venv)"
             printf "%s\n" "$usage"
         } >&2
         return 1
     fi
 
     if [[ -e "$venv_name" ]]; then
-        extra_message="directory already exists: $venv_name"
         {
-            if [[ -n "$extra_message" ]]; then
-                printf "%s\n\n" "$extra_message"
-            fi
+            printf "directory already exists: %s\n\n" "$venv_name"
             printf "%s\n" "$usage"
         } >&2
         return 2
     fi
 
     if ! python3 -m venv "$venv_name"; then
-        exit_status=$?
-        return "$exit_status"
+        return $?
     fi
 
-    # shellcheck source=/dev/null
-    source "$venv_name/bin/activate"
+    vrun "$venv_name"
 }
