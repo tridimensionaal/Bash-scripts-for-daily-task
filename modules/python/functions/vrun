@@ -2,7 +2,6 @@
 
 vrun() {
     local venv_name=""
-    local venv_dir=""
 
     local usage='usage: vrun [NAME]
 
@@ -44,29 +43,27 @@ examples:
         venv_name="venv"
     fi
 
-    venv_dir="$venv_name"
-
-    if [[ ! -d "$venv_dir" ]]; then
+    if [[ ! -d "$venv_name" ]]; then
         {
-            printf "directory not found: %s\n\n" "$venv_dir"
+            printf "directory not found: %s\n\n" "$venv_name"
             printf "%s\n" "$usage"
         } >&2
         return 2
     fi
 
-    if [[ ! -f "$venv_dir/bin/activate" ]]; then
+    if [[ ! -f "$venv_name/bin/activate" ]]; then
         {
-            printf "activation script not found: %s/bin/activate\n\n" "$venv_dir"
+            printf "activation script not found: %s/bin/activate\n\n" "$venv_name"
             printf "%s\n" "$usage"
         } >&2
         return 1
     fi
 
     # shellcheck source=/dev/null
-    if ! source "$venv_dir/bin/activate"; then
+    if ! source "$venv_name/bin/activate"; then
         local exit_status=$?
         {
-            printf "failed to activate venv: %s\n\n" "$venv_dir"
+            printf "failed to activate venv: %s\n\n" "$venv_name"
             printf "%s\n" "$usage"
         } >&2
         return "$exit_status"
