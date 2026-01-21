@@ -1,45 +1,51 @@
 #!/usr/bin/env bash
 
 detect_source_path() {
-    if [[ -n "${BASH_SOURCE[0]:-}" ]]; then
-        printf "%s\n" "${BASH_SOURCE[0]}"
-        return 0
-    fi
-
-    if [[ -n "${ZSH_VERSION:-}" ]]; then
-        printf "%s\n" "${(%):-%x}"
-        return 0
-    fi
-
-    printf "%s\n" "$0"
-}
-
-set_project_dir() {
     local source_path
-    source_path="$(detect_source_path)"
-    if [[ -z "$source_path" || "$source_path" == "zsh" || "$source_path" == "bash" ]]; then
-        if [[ -n "${PWD:-}" && -f "$PWD/setup/init" ]]; then
-            source_path="$PWD/setup/init"
-        else
-            printf "setup/init: unable to determine PROJECT_DIR\n" >&2
-            return 1
-        fi
+
+    # local path for bash when script is sourced
+    if [[ -n "${BASH_SOURCE[0]:-}" ]]; then
+        source_path="${BASH_SOURCE[0]}"
+
+    # local path for zsh when script is sourced
+    elif [[ -n "${ZSH_VERSION:-}" ]] && [[ -n "${funcfiletrace[1]:-}" ]]; then
+        source_path="${funcfiletrace[1]%%:*}"
+    else
+        return 1
     fi
 
+    # local path -> full path
     if [[ "$source_path" != /* ]]; then
         source_path="$PWD/$source_path"
     fi
 
+    if [[ -z "$source_path" || ! -f "$source_path" ]]; then
+        return 1
+    fi
+
+    printf "%s\n" "$source_path"
+}
+
+set_project_dir() {
+    local source_path
+    source_path="$(detect_source_path)" || {
+        printf "setup/init: unable to determine PROJECT_DIR\n" >&2
+        return 1
+    }
+
+    # resolve project root relative to this file.
     PROJECT_DIR="$(cd "$(dirname "$source_path")/.." && pwd)"
     export PROJECT_DIR
 }
 
 ensure_bin_path() {
     bin_dir="$PROJECT_DIR/bin"
+    # Ensure a bin directory exists for symlinked scripts.
     if [[ ! -d "$bin_dir" ]]; then
         mkdir -p "$bin_dir"
     fi
 
+    # Prepend to PATH once.
     case ":$PATH:" in
     *":$bin_dir:"*) ;;
     *)
@@ -54,6 +60,7 @@ link_scripts() {
     bin_dir="$PROJECT_DIR/bin"
 
     if [[ -d "$bin_dir" ]]; then
+        # remove broken/outdated symlinks that point to known script paths.
         while IFS= read -r -d '' link; do
             target="$(readlink "$link" 2>/dev/null || true)"
             case "$target" in
@@ -64,38 +71,22 @@ link_scripts() {
         done < <(find "$bin_dir" -maxdepth 1 -type l -print0)
     fi
 
-    if [[ -d "$PROJECT_DIR/modules" ]]; then
-        while IFS= read -r -d '' script; do
-            IFS= read -r first <"$script" || continue
-            case "$first" in
-            '#!'*)
-                chmod +x "$script" 2>/dev/null || true
-                script_name="$(basename "$script")"
-                ln -sfn "$script" "$bin_dir/$script_name"
-                ;;
-            esac
-        done < <(find "$PROJECT_DIR/modules" -type f -path '*/scripts/*' -print0)
-    fi
+    # link scripts into bin.
+    while IFS= read -r -d '' script; do
+        IFS= read -r first <"$script" || continue
+        case "$first" in
+        '#!'*)
+            chmod +x "$script" 2>/dev/null || true
+            script_name="$(basename "$script")"
+            ln -sfn "$script" "$bin_dir/$script_name"
+            ;;
+        esac
+    done < <(find "$PROJECT_DIR/modules" -type f -path '*/scripts/*' -print0)
 
-    if [[ -d "$PROJECT_DIR/scripts" ]]; then
-        while IFS= read -r -d '' script; do
-            IFS= read -r first <"$script" || continue
-            case "$first" in
-            '#!'*)
-                chmod +x "$script" 2>/dev/null || true
-                script_name="$(basename "$script")"
-                ln -sfn "$script" "$bin_dir/$script_name"
-                ;;
-            esac
-        done < <(find "$PROJECT_DIR/scripts" -type f -print0)
-    fi
 }
 
 source_functions() {
-    if [[ ! -d "$PROJECT_DIR/modules" ]]; then
-        return 0
-    fi
-
+    # source functions files (only source shebang files)
     while IFS= read -r -d '' func_file; do
         IFS= read -r first <"$func_file" || continue
         case "$first" in
@@ -104,35 +95,15 @@ source_functions() {
             . "$func_file"
             ;;
         esac
-    done < <(find "$PROJECT_DIR/modules" -type f -path '*/functions/*' ! -name '*.md' -print0)
+    done < <(find "$PROJECT_DIR/modules" -type f -path '*/functions/*' -print0)
 }
 
 source_aliases() {
-    if [[ -d "$PROJECT_DIR/modules" ]]; then
-        while IFS= read -r -d '' alias_file; do
-            # shellcheck source=/dev/null
-            . "$alias_file"
-        done < <(find "$PROJECT_DIR/modules" -type f -name 'aliases.sh' -print0)
-    fi
-
-    if [[ -d "$PROJECT_DIR/modules" ]]; then
-        while IFS= read -r -d '' alias_file; do
-            # shellcheck source=/dev/null
-            . "$alias_file"
-        done < <(find "$PROJECT_DIR/modules" -type f -name 'aliases' -print0)
-    fi
-
-    if [[ -n "${BASH_VERSION:-}" && -d "$PROJECT_DIR/modules" ]]; then
-        while IFS= read -r -d '' alias_file; do
-            # shellcheck source=/dev/null
-            . "$alias_file"
-        done < <(find "$PROJECT_DIR/modules" -type f -name '.bash_aliases' -print0)
-    elif [[ -n "${ZSH_VERSION:-}" && -d "$PROJECT_DIR/modules" ]]; then
-        while IFS= read -r -d '' alias_file; do
-            # shellcheck source=/dev/null
-            . "$alias_file"
-        done < <(find "$PROJECT_DIR/modules" -type f -name '.zsh_aliases' -print0)
-    fi
+    # source aliases files
+    while IFS= read -r -d '' alias_file; do
+        # shellcheck source=/dev/null
+        . "$alias_file"
+    done < <(find "$PROJECT_DIR/modules" -type f -name 'aliases.sh' -print0)
 }
 
 main() {
@@ -140,6 +111,11 @@ main() {
         return 1
     fi
 
+    if [[ ! -d "$PROJECT_DIR/modules" ]]; then
+        return 1
+    fi
+
+    # wire up PATH, links, and shell helpers.
     ensure_bin_path
     link_scripts
     source_functions
