@@ -103,7 +103,7 @@ source_aliases() {
     while IFS= read -r -d '' alias_file; do
         # shellcheck source=/dev/null
         . "$alias_file"
-    done < <(find "$PROJECT_DIR/modules" -type f -name 'aliases.sh' -print0)
+    done < <(find "$PROJECT_DIR/modules" -type f -name 'aliases' -print0)
 }
 
 main() {

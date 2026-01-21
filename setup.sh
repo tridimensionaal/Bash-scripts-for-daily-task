@@ -34,7 +34,7 @@ detect_shell() {
         printf "%s\n" "$shell_name"
         ;;
     *)
-        print_usage "Unsupported shell: $shell_name"
+        print_usage "unsupported shell: $shell_name"
         exit 2
         ;;
     esac
@@ -66,7 +66,7 @@ ensure_placeholders() {
     fi
 
     if ((has_start || has_end)); then
-        print_usage "Placeholder markers are incomplete in $file_path"
+        print_usage "placeholder markers are incomplete in $file_path"
         exit 2
     fi
 
@@ -77,16 +77,14 @@ ensure_placeholders() {
 
 update_block() {
     file_path="$1"
-    block_file="$4"
+    init_path="$2"
 
     tmp_file="$(mktemp)"
-    awk -v start="$START_MARKER" -v end="$END_MARKER" -v block_file="$block_file" '
+    awk -v start="$START_MARKER" -v end="$END_MARKER" -v init_path="$init_path" '
         $0 == start {
             print $0
-            while ((getline line < block_file) > 0) {
-                print line
-            }
-            close(block_file)
+            print "# managed by Bash-scripts-for-daily-task (do not edit inside this block)"
+            print "source " init_path
             inblock = 1
             next
         }
@@ -108,7 +106,7 @@ update_block() {
 
 main() {
     if [[ $# -gt 0 ]]; then
-        print_usage "This script takes no arguments"
+        print_usage "this script takes no arguments"
         exit 2
     fi
 
@@ -118,20 +116,13 @@ main() {
     init_path="$repo_root/setup/init"
 
     if [[ ! -f "$init_path" ]]; then
-        print_usage "Init script not found: $init_path"
+        print_usage "init script not found: $init_path"
         exit 2
     fi
 
     ensure_placeholders "$rc_file"
 
-    block_file="$(mktemp)"
-    cat <<EOF >"$block_file"
-# managed by Bash-scripts-for-daily-task (do not edit inside this block)
-source "$init_path"
-EOF
-
-    update_block "$rc_file" "$block_file"
-    rm -f "$block_file"
+    update_block "$rc_file" "$init_path"
     printf "updated %s to source %s\n" "$rc_file" "$init_path"
 }
 
