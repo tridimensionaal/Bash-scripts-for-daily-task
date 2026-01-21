@@ -2,6 +2,9 @@
 
 set -euo pipefail
 
+START_MARKER="# ---start_of_bash_scripts_setup---"
+END_MARKER="# ---end_of_bash_scripts_setup---"
+
 print_usage() {
     extra_message="${1:-}"
 
@@ -39,8 +42,6 @@ detect_shell() {
 
 ensure_placeholders() {
     file_path="$1"
-    start_marker="$2"
-    end_marker="$3"
     search_cmd=(rg -Fq)
 
     if ! command -v rg >/dev/null 2>&1; then
@@ -53,10 +54,10 @@ ensure_placeholders() {
 
     has_start=0
     has_end=0
-    if "${search_cmd[@]}" "$start_marker" "$file_path"; then
+    if "${search_cmd[@]}" "$START_MARKER" "$file_path"; then
         has_start=1
     fi
-    if "${search_cmd[@]}" "$end_marker" "$file_path"; then
+    if "${search_cmd[@]}" "$END_MARKER" "$file_path"; then
         has_end=1
     fi
 
@@ -70,18 +71,16 @@ ensure_placeholders() {
     fi
 
     {
-        printf "\n%s\n%s\n" "$start_marker" "$end_marker"
+        printf "\n%s\n%s\n" "$START_MARKER" "$END_MARKER"
     } >>"$file_path"
 }
 
 update_block() {
     file_path="$1"
-    start_marker="$2"
-    end_marker="$3"
     block_file="$4"
 
     tmp_file="$(mktemp)"
-    awk -v start="$start_marker" -v end="$end_marker" -v block_file="$block_file" '
+    awk -v start="$START_MARKER" -v end="$END_MARKER" -v block_file="$block_file" '
         $0 == start {
             print $0
             while ((getline line < block_file) > 0) {
@@ -123,10 +122,7 @@ main() {
         exit 2
     fi
 
-    start_marker="# ---start_of_bash_scripts_setup---"
-    end_marker="# ---end_of_bash_scripts_setup---"
-
-    ensure_placeholders "$rc_file" "$start_marker" "$end_marker"
+    ensure_placeholders "$rc_file"
 
     block_file="$(mktemp)"
     cat <<EOF >"$block_file"
@@ -134,9 +130,8 @@ main() {
 source "$init_path"
 EOF
 
-    update_block "$rc_file" "$start_marker" "$end_marker" "$block_file"
+    update_block "$rc_file" "$block_file"
     rm -f "$block_file"
-
     printf "updated %s to source %s\n" "$rc_file" "$init_path"
 }
 

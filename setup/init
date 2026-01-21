@@ -40,12 +40,12 @@ set_project_dir() {
 
 ensure_bin_path() {
     bin_dir="$PROJECT_DIR/bin"
-    # Ensure a bin directory exists for symlinked scripts.
+    # ensure a bin directory exists for symlinked scripts
     if [[ ! -d "$bin_dir" ]]; then
         mkdir -p "$bin_dir"
     fi
 
-    # Prepend to PATH once.
+    # prepend to PATH once
     case ":$PATH:" in
     *":$bin_dir:"*) ;;
     *)
