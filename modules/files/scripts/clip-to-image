@@ -2,6 +2,10 @@
 
 set -euo pipefail
 
+# save the current clipboard image to image.<format> in the current directory
+# supports wayland (wl-paste) and x11 (xclip) depending on availability
+# TODO: test on X11 (the old script works X11, so probably this should works)
+
 print_usage() {
     extra_message="${1:-}"
 
@@ -24,6 +28,7 @@ EOF
 }
 
 check_session_and_tool() {
+    # detect clipboard 'backend' and available image MIME type
     if [[ "${XDG_SESSION_TYPE:-}" == "wayland" ]] &&
         command -v wl-paste >/dev/null; then
 
@@ -37,12 +42,12 @@ check_session_and_tool() {
         )
         clip_tool="xclip"
     else
-        print_usage "No clipboard tool available"
+        print_usage "no clipboard tool available"
         exit 1
     fi
 
     if [[ -z "$image_type" ]]; then
-        print_usage "No image in clipboard"
+        print_usage "no image in clipboard"
         exit 1
     fi
 
@@ -50,6 +55,8 @@ check_session_and_tool() {
 }
 
 from_clipboard_to_file() {
+    # write clipboard image data to a file named image.<subtype>.
+    # like save the clipboard image to image.png or image.jpg
     image_type="$1"
     clip_tool="$2"
     case "$clip_tool" in
@@ -71,13 +78,13 @@ main() {
         exit 0
         ;;
     -*)
-        printf "Unknown option: %s" "$1" >&2
+        printf "unknown option: %s" "$1" >&2
         print_usage
         exit 2
         ;;
     esac
 
-    # derive image_type and clip_tool from var
+    # derive image_type and clip_tool from a single helper output line
     IFS=$'\t' read -r image_type clip_tool < <(check_session_and_tool)
 
     from_clipboard_to_file "$image_type" "$clip_tool"
