@@ -98,7 +98,7 @@ main() {
         exit 0
         ;;
     -*)
-        echo "Unknown option: $1" >&2
+        echo "unknown option: $1" >&2
         print_usage
         exit 2
         ;;
@@ -106,14 +106,14 @@ main() {
 
     # check if the filename is present
     if [[ $# -ne 1 ]]; then
-        print_usage "Filename is required"
+        print_usage "filename is required"
         exit 2
     fi
 
     # check if the file exists
     file="$1"
     if [[ -e "$file" ]]; then
-        print_usage "File already exists: $file"
+        print_usage "file already exists: $file"
         exit 1
     fi
 

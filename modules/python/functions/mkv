@@ -43,6 +43,7 @@ examples:
         venv_name="venv"
     fi
 
+    # check if python is installed
     if ! command -v python3 >/dev/null 2>&1; then
         {
             printf "%s\n\n" "python3 not found in PATH"
@@ -51,9 +52,10 @@ examples:
         return 127
     fi
 
+    # check if python venv module is installed
     if ! python3 -m venv -h >/dev/null 2>&1; then
         {
-            printf "%s\n\n" "python3 venv module not available (try installing python3-venv)"
+            printf "%s\n\n" "python3 venv module not available"
             printf "%s\n" "$usage"
         } >&2
         return 1
@@ -71,5 +73,8 @@ examples:
         return $?
     fi
 
+    printf "virtual env (%s) created" "$venv_name"
     vrun "$venv_name"
+    printf "virtual env (%s) activated" "$venv_name"
+
 }

@@ -42,7 +42,7 @@ mv_lst_file() {
 
     # check if last_file_name exists
     if [[ -z "$last_file_name" ]]; then
-        print_usage "No files found in $src_dir"
+        print_usage "no last file found in $src_dir (no files on the dir)"
         exit 1
     fi
 
@@ -71,7 +71,7 @@ main() {
             exit 0
             ;;
         *)
-            print_usage "Unknown option: $1"
+            print_usage "unknown option: $1"
             exit 2
             ;;
         esac
@@ -80,19 +80,19 @@ main() {
 
     # check if src_dir and dst_dir exist
     if [[ -z "$src_dir" || -z "$dst_dir" ]]; then
-        print_usage "Both --input-dir and --output-dir are required"
+        print_usage "both --input-dir and --output-dir are required"
         exit 2
     fi
 
     # check if src_dir is a dir
     if [[ ! -d "$src_dir" ]]; then
-        print_usage "Input dir not found: $src_dir"
+        print_usage "input dir not found: $src_dir"
         exit 2
     fi
 
     # check if dst_dir is a dir
     if [[ ! -d "$dst_dir" ]]; then
-        print_usage "Output dir not found: $dst_dir"
+        print_usage "output dir not found: $dst_dir"
         exit 2
     fi
 
