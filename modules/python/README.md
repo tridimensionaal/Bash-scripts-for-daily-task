@@ -1,11 +1,13 @@
-# python module
+# Python module
 
-Scripts, functions and aliases related to python.functions
+Helpers for Python virtual environments.
 
-Currently, there is only functions implemented:
+## Scripts
+No scripts in this module yet.
 
----
+## Functions
+- `mkv` — Create a virtual environment in the current directory (defaults to `venv`) and activate it.
+- `vrun` — Activate an existing virtual environment in the current directory (defaults to `venv`).
 
-## functions
-
-More details on the scripts [README](./functions/README.md)
+## Aliases
+No aliases in this module yet.

@@ -36,6 +36,8 @@ Each module groups related helpers by domain (e.g., `files/`, `python/`). module
 - **function**: Runs in the current shell context; can share shell state and be used in pipelines.
 - **alias**: A short text substitution; best for simple shorthands.
 
+For more details about the current modules see [modules/README.md](./modules/README.md).
+
 ### setup/
 
 Contains the initialization script `setup/init`, which:

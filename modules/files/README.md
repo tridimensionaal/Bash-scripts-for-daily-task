@@ -1,32 +1,47 @@
 # Files module
 
-Scripts, functions and aliases related to 
+File and clipboard related helpers.
 
-Currently, there is:
+## Scripts
 
-## Aliases
+### clip-to-image
+Save the clipboard image to `image.<format>` in the current directory
 
-
-
-# ## mv-lst-d
-Preset: move the most recently modified file from `~/Downloads` to the current
-directory.
+Requires a clipboard tool: `wl-paste` on Wayland or `xclip` on X11
 
 ```sh
-mv-lst-d
+clip-to-image
+```
+
+**TODO**: test on X11
+
+---
+
+### mv-lst-file
+Move the most recently modified file from an input directory to an output
+location
+
+```sh
+mv-lst-file --input-dir ~/Downloads --output-dir .
 ```
 
 ---
 
-### mv-lst-pic
-Preset: move the latest screenshot from `~/Pictures/Screenshots/` into the
-current directory as `image.png`.
+### touch-f
+Create a new file with a starter template based on its extension. If the filename has no extension, it creates a bash script and makes it executable
 
 ```sh
-mv-lst-pic
+touch-f script
+touch-f script.py
+touch-f app.js
+touch-f tool.sh
 ```
 
---- 
-## Scripts
+## Functions
 
-More details on the scripts [README](./scripts/README.md)
+No functions in this module yet.
+
+## Aliases
+
+- `mv-lst-d` — Move the latest file from `~/Downloads` to the current directory (via `mv-lst-file`)
+- `mv-lst-pic` — Move the latest screenshot from `~/Pictures/Screenshots` to `./image.png` (via `mv-lst-file`)
