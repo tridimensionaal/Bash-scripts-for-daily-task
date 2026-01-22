@@ -24,17 +24,12 @@ The project is called "bash scripts for daily tasks" (a legacy name from when it
 ## Project structure
 
 ### modules/
-each module groups related helpers by domain (e.g., `files/`, `python/`). modules can include:
 
-#### scripts/
+Each module groups related helpers by domain (e.g., `files/`, `python/`). modules can include:
 
-Executable bash scripts. These are standalone programs (run as commands).
-
-#### functions/
-Bash files meant to be sourced. They define functions you can call from your shell.
-
-#### aliases/ 
-A plain file with `alias ...` entries, sourced into your shell.
+- `scripts/`: Executable bash scripts. These are standalone programs (run as commands).
+- `functions/`: Bash files meant to be sourced. They define functions you can call from your shell.
+- `aliases/`: A plain file with `alias ...` entries, sourced into your shell.
 
 **Bash script vs function vs alias**
 - **script**: Invokes a new shell/process; good for reusable commands and tools.
