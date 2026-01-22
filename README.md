@@ -1,12 +1,8 @@
 # Bash scripts for daily tasks
 
-A collection of small bash helpers (scripts, functions, and aliases) organized by topic to speed up common workflows.
-
-The project is called "bash scripts for daily tasks" (a legacy name from when it only had scripts). it now includes scripts, functions, and aliases, making it a more complete set of bash helpers organized by topic to speed up common workflows. These helpers are written in bash but also work in zsh.
-
----
 
 ## Index
+- [Project description](#project-description)
 - [Project structure](#project-structure)
   - [modules/](#modules)
     - [scripts/](#scripts)
@@ -16,6 +12,14 @@ The project is called "bash scripts for daily tasks" (a legacy name from when it
 - [How to setup](#how-to-setup)
 
 ---
+
+## Project description
+
+A collection of small bash helpers (scripts, functions, and aliases) organized by topic to speed up common workflows.
+
+The project is called "bash scripts for daily tasks" (a legacy name from when it only had scripts). it now includes scripts, functions, and aliases, making it a more complete set of bash helpers organized by topic to speed up common workflows. These helpers are written in bash but also work in zsh.
+
+
 
 ## Project structure
 
@@ -37,7 +41,7 @@ A plain file with `alias ...` entries, sourced into your shell.
 - **function**: Runs in the current shell context; can share shell state and be used in pipelines.
 - **alias**: A short text substitution; best for simple shorthands.
 
-### Setup/
+### setup/
 
 Contains the initialization script `setup/init`, which:
 - detects the repo root and sets `PROJECT_DIR`,
