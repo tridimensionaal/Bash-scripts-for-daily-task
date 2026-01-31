@@ -5,4 +5,4 @@ Modules organize helpers by domain. Each module can include scripts, functions, 
 ## Available modules
 - [files](./files/README.md): file and clipboard helpers.
 - [python](./python/README.md): Python virtual environment helpers.
-
+- [grep](./grep/README.md): grep-based helpers.

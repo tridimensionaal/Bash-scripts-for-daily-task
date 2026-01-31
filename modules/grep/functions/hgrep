@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+hgrep() {
+    local usage
+    usage=$(
+        cat <<'EOF'
+usage: hgrep [--help] GREP_ARGS...
+
+search your shell history file using grep
+
+this function normalizes common history formats before searching:
+- zsh EXTENDED_HISTORY lines like ": 1768003447:0;cmd" (prefix stripped)
+- bash HISTTIMEFORMAT timestamps like "#1768003447" (timestamp lines skipped)
+
+notes:
+- requires HISTFILE to be set in the current shell
+- to search for the literal pattern "--help", use: hgrep -- --help
+
+examples:
+  hgrep @
+  hgrep -i 'github.com'
+EOF
+    )
+
+    if [[ "${1:-}" == "--help" ]]; then
+        printf "%s\n" "$usage" >&2
+        return 0
+    fi
+
+    if [[ $# -eq 0 ]]; then
+        printf "%s\n\n" "missing grep args (pattern required)" >&2
+        printf "%s\n" "$usage" >&2
+        return 2
+    fi
+
+    if [[ -z "${HISTFILE:-}" ]]; then
+        printf "%s\n\n" "HISTFILE is not set in this shell" >&2
+        printf "%s\n" "$usage" >&2
+        return 1
+    fi
+
+    if [[ ! -f "$HISTFILE" || ! -r "$HISTFILE" ]]; then
+        printf "%s\n\n" "HISTFILE is not a readable file: $HISTFILE" >&2
+        printf "%s\n" "$usage" >&2
+        return 2
+    fi
+
+    cat -- "$HISTFILE" |
+        awk '
+            /^: [0-9]+:[0-9]+;/ { sub(/^: [0-9]+:[0-9]+;/, "", $0) }
+            /^#[0-9]+$/ { next }
+            { print }
+        ' |
+        command grep "$@" --color=auto
+}
