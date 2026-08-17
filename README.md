@@ -58,4 +58,18 @@ Run the setup script once:
 ./setup.sh
 ```
 
-This updates your `~/.bashrc` or `~/.zshrc` to source `setup/init`. Open a new shell (or `source` your rc file) to apply the changes.
+The script updates your Bash or Zsh startup file to source `setup/init`. It keeps using an existing managed block, so rerunning it is safe.
+
+For Bash, the default target is `~/.bashrc`. For Zsh, the active target is `${ZDOTDIR:-$HOME}/.zshrc`. When Zsh uses a non-default `ZDOTDIR` and neither possible file has a managed block, setup asks whether to update the active file or the compatibility file at `~/.zshrc`.
+
+Useful overrides:
+
+```sh
+./setup.sh --dry-run
+./setup.sh --shell zsh
+./setup.sh --rc-file "$HOME/.zshrc"
+```
+
+`--rc-file` is useful when a tracked XDG Zsh configuration sources a machine-local `~/.zshrc`: the integration stays out of the dotfiles repository. In scripts or other non-interactive environments, use `--rc-file` whenever the two Zsh targets are ambiguous.
+
+Open a new shell, or source the selected startup file, to apply the changes.
