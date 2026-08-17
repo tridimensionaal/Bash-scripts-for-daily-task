@@ -2,8 +2,8 @@
 
 set -euo pipefail
 
-START_MARKER="# ---start_of_bash_scripts_setup---"
-END_MARKER="# ---end_of_bash_scripts_setup---"
+START_MARKER="# ---start_of_shellbox_setup---"
+END_MARKER="# ---end_of_shellbox_setup---"
 shell_override=""
 rc_override=""
 dry_run=0
@@ -18,7 +18,7 @@ print_usage() {
         fi
 
         cat <<'EOF'
-usage: setup.sh [--shell bash|zsh] [--rc-file PATH] [--dry-run]
+usage: setup.sh [--shell zsh|bash] [--rc-file PATH] [--dry-run]
 
 set up shell initialization for this repo by sourcing setup/init
 EOF
@@ -66,7 +66,7 @@ detect_shell() {
 
     shell_name="${shell_path##*/}"
     case "$shell_name" in
-    bash | zsh)
+    zsh | bash)
         printf "%s\n" "$shell_name"
         ;;
     *)
@@ -86,10 +86,10 @@ discover_zdotdir() {
     fi
 
     if command -v zsh >/dev/null 2>&1; then
-        output=$(zsh -c 'printf "\n__BASH_SCRIPTS_ZDOTDIR__%s\n" "${ZDOTDIR:-$HOME}"') || true
+        output=$(zsh -c 'printf "\n__SHELLBOX_ZDOTDIR__%s\n" "${ZDOTDIR:-$HOME}"') || true
         discovered=$(awk '
-            index($0, "__BASH_SCRIPTS_ZDOTDIR__") == 1 {
-                value = substr($0, length("__BASH_SCRIPTS_ZDOTDIR__") + 1)
+            index($0, "__SHELLBOX_ZDOTDIR__") == 1 {
+                value = substr($0, length("__SHELLBOX_ZDOTDIR__") + 1)
             }
             END { print value }
         ' <<<"$output")
@@ -238,7 +238,7 @@ print_managed_block() {
     local init_path=$1
 
     printf '%s\n' "$START_MARKER"
-    printf '%s\n' '# managed by Bash-scripts-for-daily-task (do not edit inside this block)'
+    printf '%s\n' '# managed by Shellbox (do not edit inside this block)'
     quote_source_path "$init_path"
     printf '%s\n' "$END_MARKER"
 }
@@ -296,7 +296,7 @@ install_block() {
         printf 'resolved symlink target %s\n' "$resolved_path"
     fi
 
-    tmp_file=$(mktemp "$target_dir/.bash-scripts-setup.XXXXXX")
+    tmp_file=$(mktemp "$target_dir/.shellbox-setup.XXXXXX")
     if [[ -e "$resolved_path" ]]; then
         chmod --reference="$resolved_path" "$tmp_file"
     fi

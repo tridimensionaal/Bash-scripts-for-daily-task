@@ -3,13 +3,13 @@
 detect_source_path() {
     local source_path
 
-    # local path for bash when script is sourced
-    if [[ -n "${BASH_SOURCE[0]:-}" ]]; then
-        source_path="${BASH_SOURCE[0]}"
-
     # local path for zsh when script is sourced
-    elif [[ -n "${ZSH_VERSION:-}" ]] && [[ -n "${funcfiletrace[1]:-}" ]]; then
+    if [[ -n "${ZSH_VERSION:-}" ]] && [[ -n "${funcfiletrace[1]:-}" ]]; then
         source_path="${funcfiletrace[1]%%:*}"
+
+    # local path for bash when script is sourced
+    elif [[ -n "${BASH_SOURCE[0]:-}" ]]; then
+        source_path="${BASH_SOURCE[0]}"
     else
         return 1
     fi
@@ -26,20 +26,20 @@ detect_source_path() {
     printf "%s\n" "$source_path"
 }
 
-set_project_dir() {
+set_shellbox_dir() {
     local source_path
     source_path="$(detect_source_path)" || {
-        printf "setup/init: unable to determine PROJECT_DIR\n" >&2
+        printf "setup/init: unable to determine SHELLBOX_DIR\n" >&2
         return 1
     }
 
     # resolve project root relative to this file.
-    PROJECT_DIR="$(cd "$(dirname "$source_path")/.." && pwd)"
-    export PROJECT_DIR
+    SHELLBOX_DIR="$(cd "$(dirname "$source_path")/.." && pwd)"
+    export SHELLBOX_DIR
 }
 
 ensure_bin_path() {
-    bin_dir="$PROJECT_DIR/bin"
+    bin_dir="$SHELLBOX_DIR/bin"
     # ensure a bin directory exists for symlinked scripts
     if [[ ! -d "$bin_dir" ]]; then
         mkdir -p "$bin_dir"
@@ -57,14 +57,14 @@ ensure_bin_path() {
 }
 
 link_scripts() {
-    bin_dir="$PROJECT_DIR/bin"
+    bin_dir="$SHELLBOX_DIR/bin"
 
     if [[ -d "$bin_dir" ]]; then
         # remove broken/outdated symlinks that point to known script paths.
         while IFS= read -r -d '' link; do
             target="$(readlink "$link" 2>/dev/null || true)"
             case "$target" in
-            "$PROJECT_DIR"/modules/*/scripts/* | "$PROJECT_DIR"/scripts/*)
+            "$SHELLBOX_DIR"/modules/*/scripts/* | "$SHELLBOX_DIR"/scripts/*)
                 rm -f "$link"
                 ;;
             esac
@@ -81,7 +81,7 @@ link_scripts() {
             ln -sfn "$script" "$bin_dir/$script_name"
             ;;
         esac
-    done < <(find "$PROJECT_DIR/modules" -type f -path '*/scripts/*' -print0)
+    done < <(find "$SHELLBOX_DIR/modules" -type f -path '*/scripts/*' -print0)
 
 }
 
@@ -95,7 +95,7 @@ source_functions() {
             . "$func_file"
             ;;
         esac
-    done < <(find "$PROJECT_DIR/modules" -type f -path '*/functions/*' -print0)
+    done < <(find "$SHELLBOX_DIR/modules" -type f -path '*/functions/*' -print0)
 }
 
 source_aliases() {
@@ -103,15 +103,15 @@ source_aliases() {
     while IFS= read -r -d '' alias_file; do
         # shellcheck source=/dev/null
         . "$alias_file"
-    done < <(find "$PROJECT_DIR/modules" -type f -name 'aliases' -print0)
+    done < <(find "$SHELLBOX_DIR/modules" -type f -name 'aliases' -print0)
 }
 
 main() {
-    if ! set_project_dir; then
+    if ! set_shellbox_dir; then
         return 1
     fi
 
-    if [[ ! -d "$PROJECT_DIR/modules" ]]; then
+    if [[ ! -d "$SHELLBOX_DIR/modules" ]]; then
         return 1
     fi
 
