@@ -4,6 +4,10 @@ set -euo pipefail
 
 START_MARKER="# ---start_of_bash_scripts_setup---"
 END_MARKER="# ---end_of_bash_scripts_setup---"
+shell_override=""
+rc_override=""
+dry_run=0
+tmp_file=""
 
 print_usage() {
     extra_message="${1:-}"
@@ -14,15 +18,47 @@ print_usage() {
         fi
 
         cat <<'EOF'
-usage: setup.sh
+usage: setup.sh [--shell bash|zsh] [--rc-file PATH] [--dry-run]
 
 set up shell initialization for this repo by sourcing setup/init
 EOF
     } >&2
 }
 
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+        --shell)
+            [[ $# -ge 2 && "$2" != --* ]] || {
+                print_usage "--shell requires a value"
+                exit 2
+            }
+            shell_override="$2"
+            shift
+            ;;
+        --rc-file)
+            [[ $# -ge 2 && "$2" != --* ]] || {
+                print_usage "--rc-file requires a value"
+                exit 2
+            }
+            rc_override="$2"
+            shift
+            ;;
+        --dry-run)
+            dry_run=1
+            ;;
+        *)
+            print_usage "unknown argument: $1"
+            exit 2
+            ;;
+        esac
+        shift
+    done
+}
+
 detect_shell() {
-    shell_path="${SHELL:-}"
+    local shell_path="${shell_override:-${SHELL:-}}"
+    local shell_name
     if [[ -z "$shell_path" ]]; then
         print_usage "SHELL is not set"
         exit 2
@@ -40,78 +76,272 @@ detect_shell() {
     esac
 }
 
-ensure_placeholders() {
-    file_path="$1"
-    search_cmd=(rg -Fq)
+discover_zdotdir() {
+    local output
+    local discovered
 
-    if ! command -v rg >/dev/null 2>&1; then
-        search_cmd=(grep -Fq)
-    fi
-
-    if [[ ! -f "$file_path" ]]; then
-        : >"$file_path"
-    fi
-
-    has_start=0
-    has_end=0
-    if "${search_cmd[@]}" "$START_MARKER" "$file_path"; then
-        has_start=1
-    fi
-    if "${search_cmd[@]}" "$END_MARKER" "$file_path"; then
-        has_end=1
-    fi
-
-    if ((has_start && has_end)); then
+    if [[ -n "${ZDOTDIR:-}" ]]; then
+        printf '%s\n' "$ZDOTDIR"
         return 0
     fi
 
-    if ((has_start || has_end)); then
-        print_usage "placeholder markers are incomplete in $file_path"
-        exit 2
+    if command -v zsh >/dev/null 2>&1; then
+        output=$(zsh -c 'printf "\n__BASH_SCRIPTS_ZDOTDIR__%s\n" "${ZDOTDIR:-$HOME}"') || true
+        discovered=$(awk '
+            index($0, "__BASH_SCRIPTS_ZDOTDIR__") == 1 {
+                value = substr($0, length("__BASH_SCRIPTS_ZDOTDIR__") + 1)
+            }
+            END { print value }
+        ' <<<"$output")
+        if [[ -n "$discovered" ]]; then
+            printf '%s\n' "$discovered"
+            return 0
+        fi
+    fi
+
+    printf '%s\n' "$HOME"
+}
+
+marker_state() {
+    local file_path=$1
+
+    if [[ ! -e "$file_path" && ! -L "$file_path" ]]; then
+        printf 'absent\n'
+        return 0
+    fi
+
+    awk -v start="$START_MARKER" -v end="$END_MARKER" '
+        $0 == start {
+            starts++
+            if (ends > 0) malformed = 1
+        }
+        $0 == end {
+            ends++
+            if (starts != 1 || ends != 1) malformed = 1
+        }
+        END {
+            if (starts == 0 && ends == 0) {
+                print "absent"
+            } else if (starts == 1 && ends == 1 && !malformed) {
+                print "complete"
+            } else {
+                print "malformed"
+            }
+        }
+    ' "$file_path"
+}
+
+select_rc_file() {
+    local shell_name=$1
+    local zdotdir
+    local active_rc
+    local compatibility_rc="$HOME/.zshrc"
+    local active_state
+    local compatibility_state
+    local choice
+
+    if [[ -n "$rc_override" ]]; then
+        printf '%s\n' "$rc_override"
+        return 0
+    fi
+
+    if [[ "$shell_name" == bash ]]; then
+        printf '%s\n' "$HOME/.bashrc"
+        return 0
+    fi
+
+    zdotdir=$(discover_zdotdir)
+    active_rc="$zdotdir/.zshrc"
+    if [[ "$active_rc" == "$compatibility_rc" ]]; then
+        printf '%s\n' "$active_rc"
+        return 0
+    fi
+
+    active_state=$(marker_state "$active_rc")
+    compatibility_state=$(marker_state "$compatibility_rc")
+
+    if [[ "$active_state" == malformed ]]; then
+        print_usage "managed block markers are malformed in $active_rc"
+        return 2
+    fi
+    if [[ "$compatibility_state" == malformed ]]; then
+        print_usage "managed block markers are malformed in $compatibility_rc"
+        return 2
+    fi
+
+    if [[ "$active_state" == complete && "$compatibility_state" == complete ]]; then
+        print_usage "managed blocks exist in both Zsh candidates; choose one with --rc-file"
+        return 2
+    fi
+    if [[ "$active_state" == complete ]]; then
+        printf '%s\n' "$active_rc"
+        return 0
+    fi
+    if [[ "$compatibility_state" == complete ]]; then
+        printf '%s\n' "$compatibility_rc"
+        return 0
+    fi
+
+    if [[ ! -t 0 ]]; then
+        print_usage "Zsh uses $active_rc, but $compatibility_rc is also available; choose one with --rc-file"
+        return 2
     fi
 
     {
-        printf "\n%s\n%s\n" "$START_MARKER" "$END_MARKER"
-    } >>"$file_path"
+        printf 'Choose the Zsh startup file to update:\n'
+        printf '  1) %s (active ZDOTDIR file)\n' "$active_rc"
+        printf '  2) %s (local compatibility file; the active config must source it)\n' "$compatibility_rc"
+        printf 'Selection [1-2]: '
+    } >&2
+    IFS= read -r choice
+    case "$choice" in
+    1) printf '%s\n' "$active_rc" ;;
+    2) printf '%s\n' "$compatibility_rc" ;;
+    *)
+        print_usage "invalid selection: ${choice:-<empty>}"
+        return 2
+        ;;
+    esac
 }
 
-update_block() {
-    file_path="$1"
-    init_path="$2"
+cleanup_temp() {
+    if [[ -n "$tmp_file" && -e "$tmp_file" ]]; then
+        rm -f -- "$tmp_file"
+    fi
+}
 
-    tmp_file="$(mktemp)"
-    awk -v start="$START_MARKER" -v end="$END_MARKER" -v init_path="$init_path" '
-        $0 == start {
-            print $0
-            print "# managed by Bash-scripts-for-daily-task (do not edit inside this block)"
-            print "source " init_path
-            inblock = 1
-            next
-        }
-        $0 == end {
-            print $0
-            inblock = 0
-            updated = 1
-            next
-        }
-        inblock { next }
-        { print }
-        END {
-            if (!updated) { exit 3 }
-        }
-    ' "$file_path" >"$tmp_file"
+resolve_target() {
+    local file_path=$1
 
-    mv "$tmp_file" "$file_path"
+    if [[ -L "$file_path" ]]; then
+        realpath -e -- "$file_path" || {
+            print_usage "cannot update dangling symlink: $file_path"
+            return 2
+        }
+        return 0
+    fi
+
+    realpath -m -- "$file_path"
+}
+
+quote_source_path() {
+    local value=$1
+
+    value=${value//\\/\\\\}
+    value=${value//\"/\\\"}
+    value=${value//\$/\\\$}
+    value=${value//\`/\\\`}
+    printf 'source "%s"\n' "$value"
+}
+
+print_managed_block() {
+    local init_path=$1
+
+    printf '%s\n' "$START_MARKER"
+    printf '%s\n' '# managed by Bash-scripts-for-daily-task (do not edit inside this block)'
+    quote_source_path "$init_path"
+    printf '%s\n' "$END_MARKER"
+}
+
+render_updated_file() {
+    local source_file=$1
+    local output_file=$2
+    local init_path=$3
+    local state=$4
+    local line
+    local in_block=0
+
+    if [[ "$state" == absent ]]; then
+        if [[ -f "$source_file" ]]; then
+            cat -- "$source_file" >"$output_file"
+        fi
+        if [[ -s "$output_file" ]]; then
+            printf '\n' >>"$output_file"
+        fi
+        print_managed_block "$init_path" >>"$output_file"
+        return 0
+    fi
+
+    : >"$output_file"
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        if [[ "$line" == "$START_MARKER" ]]; then
+            print_managed_block "$init_path" >>"$output_file"
+            in_block=1
+            continue
+        fi
+        if [[ "$line" == "$END_MARKER" ]]; then
+            in_block=0
+            continue
+        fi
+        if ((in_block == 0)); then
+            printf '%s\n' "$line" >>"$output_file"
+        fi
+    done <"$source_file"
+}
+
+install_block() {
+    local logical_path=$1
+    local init_path=$2
+    local state=$3
+    local resolved_path
+    local target_dir
+    local rendered_state
+
+    resolved_path=$(resolve_target "$logical_path") || return $?
+    target_dir=$(dirname "$resolved_path")
+    mkdir -p -- "$target_dir"
+
+    printf 'selected %s\n' "$logical_path"
+    if [[ -L "$logical_path" ]]; then
+        printf 'resolved symlink target %s\n' "$resolved_path"
+    fi
+
+    tmp_file=$(mktemp "$target_dir/.bash-scripts-setup.XXXXXX")
+    if [[ -e "$resolved_path" ]]; then
+        chmod --reference="$resolved_path" "$tmp_file"
+    fi
+
+    render_updated_file "$resolved_path" "$tmp_file" "$init_path" "$state"
+    rendered_state=$(marker_state "$tmp_file")
+    if [[ "$rendered_state" != complete ]]; then
+        print_usage "failed to render a valid managed block for $logical_path"
+        return 2
+    fi
+
+    if [[ -e "$resolved_path" ]] && cmp -s -- "$resolved_path" "$tmp_file"; then
+        rm -f -- "$tmp_file"
+        tmp_file=""
+        printf 'already configured %s\n' "$logical_path"
+        return 0
+    fi
+
+    mv -- "$tmp_file" "$resolved_path"
+    tmp_file=""
+    printf 'updated %s to source %s\n' "$logical_path" "$init_path"
 }
 
 main() {
-    if [[ $# -gt 0 ]]; then
-        print_usage "this script takes no arguments"
+    local shell_name
+    local rc_file
+    local repo_root
+    local init_path
+    local state
+    local action
+
+    trap cleanup_temp EXIT HUP INT TERM
+    parse_args "$@"
+
+    if [[ -z "${HOME:-}" ]]; then
+        print_usage "HOME is not set"
         exit 2
     fi
 
-    shell_name="$(detect_shell)"
-    rc_file="$HOME/.${shell_name}rc"
+    if [[ -n "$rc_override" && -z "$shell_override" ]]; then
+        shell_name=""
+    else
+        shell_name="$(detect_shell)"
+    fi
+    rc_file=$(select_rc_file "$shell_name") || exit $?
     repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     init_path="$repo_root/setup/init"
 
@@ -120,10 +350,20 @@ main() {
         exit 2
     fi
 
-    ensure_placeholders "$rc_file"
+    state=$(marker_state "$rc_file")
+    if [[ "$state" == malformed ]]; then
+        print_usage "managed block markers are malformed in $rc_file"
+        exit 2
+    fi
 
-    update_block "$rc_file" "$init_path"
-    printf "updated %s to source %s\n" "$rc_file" "$init_path"
+    if ((dry_run)); then
+        action=add
+        [[ "$state" == complete ]] && action=update
+        printf "would %s %s to source %s\n" "$action" "$rc_file" "$init_path"
+        return 0
+    fi
+
+    install_block "$rc_file" "$init_path" "$state"
 }
 
 main "$@"
