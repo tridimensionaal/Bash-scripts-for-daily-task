@@ -6,8 +6,8 @@ SCRIPT_DIR=$(
     cd "$(dirname "${BASH_SOURCE[0]}")" && pwd
 )
 SETUP="$SCRIPT_DIR/setup.sh"
-START_MARKER="# ---start_of_bash_scripts_setup---"
-END_MARKER="# ---end_of_bash_scripts_setup---"
+START_MARKER="# ---start_of_shellbox_setup---"
+END_MARKER="# ---end_of_shellbox_setup---"
 SUITE_DIR=$(mktemp -d)
 trap 'rm -rf "$SUITE_DIR"' EXIT
 

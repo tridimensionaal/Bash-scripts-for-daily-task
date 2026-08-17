@@ -2,9 +2,8 @@
 
 set -euo pipefail
 
-# These legacy boundary strings keep existing installations upgrade-safe.
-START_MARKER="# ---start_of_bash_scripts_setup---"
-END_MARKER="# ---end_of_bash_scripts_setup---"
+START_MARKER="# ---start_of_shellbox_setup---"
+END_MARKER="# ---end_of_shellbox_setup---"
 shell_override=""
 rc_override=""
 dry_run=0
