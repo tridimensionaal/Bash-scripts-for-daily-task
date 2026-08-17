@@ -327,6 +327,7 @@ main() {
     local init_path
     local state
     local action
+    local resolved_path
 
     trap cleanup_temp EXIT HUP INT TERM
     parse_args "$@"
@@ -360,6 +361,10 @@ main() {
         action=add
         [[ "$state" == complete ]] && action=update
         printf "would %s %s to source %s\n" "$action" "$rc_file" "$init_path"
+        if [[ -L "$rc_file" ]]; then
+            resolved_path=$(resolve_target "$rc_file") || exit $?
+            printf 'resolved symlink target %s\n' "$resolved_path"
+        fi
         return 0
     fi
 

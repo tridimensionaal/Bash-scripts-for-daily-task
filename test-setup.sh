@@ -100,6 +100,10 @@ test_safe_idempotent_update() {
     chmod 640 "$target"
     ln -s "$target" "$link"
 
+    capture env HOME="$test_home" SHELL=/bin/zsh "$SETUP" --rc-file "$link" --dry-run
+    assert_ok "symlink dry run"
+    assert_contains "$OUTPUT" "$target" "resolved symlink target"
+
     capture env HOME="$test_home" SHELL=/bin/zsh "$SETUP" --rc-file "$link"
     assert_ok "symlink update"
     [[ -L "$link" ]] || fail "setup replaced the rc symlink"
