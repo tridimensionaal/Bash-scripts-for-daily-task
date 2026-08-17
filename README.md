@@ -1,4 +1,6 @@
-# Bash scripts for daily tasks
+# Shellbox
+
+A Zsh-first collection of scripts, functions, and aliases for everyday tasks.
 
 
 ## Index
@@ -15,9 +17,13 @@
 
 ## Project description
 
-A collection of small bash helpers (scripts, functions, and aliases) organized by topic to speed up common workflows.
+Shellbox is a personal toolkit of small shell helpers organized by topic. Zsh
+is the primary interactive environment, so functions and aliases are designed
+with Zsh use in mind. Existing helpers remain compatible with Bash where that
+does not add meaningful complexity.
 
-The project is called "bash scripts for daily tasks" (a legacy name from when it only had scripts). it now includes scripts, functions, and aliases, making it a more complete set of bash helpers organized by topic to speed up common workflows. These helpers are written in bash but also work in zsh.
+Standalone commands currently use Bash as their interpreter. They run normally
+from Zsh and do not depend on the user's interactive shell.
 
 
 
@@ -27,11 +33,11 @@ The project is called "bash scripts for daily tasks" (a legacy name from when it
 
 Each module groups related helpers by domain (e.g., `files/`, `python/`). modules can include:
 
-- `scripts/`: Executable bash scripts. These are standalone programs (run as commands).
-- `functions/`: Bash files meant to be sourced. They define functions you can call from your shell.
+- `scripts/`: Executable standalone programs, currently written in Bash.
+- `functions/`: Shell files meant to be sourced. They define functions you can call from Zsh.
 - `aliases/`: A plain file with `alias ...` entries, sourced into your shell.
 
-**Bash script vs function vs alias**
+**Script vs function vs alias**
 - **script**: Invokes a new shell/process; good for reusable commands and tools.
 - **function**: Runs in the current shell context; can share shell state and be used in pipelines.
 - **alias**: A short text substitution; best for simple shorthands.
@@ -41,7 +47,7 @@ For more details about the current modules see [modules/README.md](./modules/REA
 ### setup/
 
 Contains the initialization script `setup/init`, which:
-- detects the repo root and sets `PROJECT_DIR`,
+- detects the repo root and sets `SHELLBOX_DIR`,
 - ensures `bin/` exists and is on `PATH`,
 - symlinks module scripts into `bin/`,
 - sources module functions and aliases.
@@ -58,9 +64,12 @@ Run the setup script once:
 ./setup.sh
 ```
 
-The script updates your Bash or Zsh startup file to source `setup/init`. It keeps using an existing managed block, so rerunning it is safe.
+The script detects your current shell and updates its startup file to source
+`setup/init`. It keeps using an existing managed block, so rerunning it is safe.
 
-For Bash, the default target is `~/.bashrc`. For Zsh, the active target is `${ZDOTDIR:-$HOME}/.zshrc`. When Zsh uses a non-default `ZDOTDIR` and neither possible file has a managed block, setup asks whether to update the active file or the compatibility file at `~/.zshrc`.
+For Zsh, the active target is `${ZDOTDIR:-$HOME}/.zshrc`. When Zsh uses a
+non-default `ZDOTDIR` and neither possible file has a managed block, setup asks
+whether to update the active file or the compatibility file at `~/.zshrc`.
 
 Useful overrides:
 
@@ -71,5 +80,8 @@ Useful overrides:
 ```
 
 `--rc-file` is useful when a tracked XDG Zsh configuration sources a machine-local `~/.zshrc`: the integration stays out of the dotfiles repository. In scripts or other non-interactive environments, use `--rc-file` whenever the two Zsh targets are ambiguous.
+
+Bash remains supported for the existing cross-shell helpers. Select it
+explicitly with `./setup.sh --shell bash`; its default target is `~/.bashrc`.
 
 Open a new shell, or source the selected startup file, to apply the changes.
