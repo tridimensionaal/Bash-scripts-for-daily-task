@@ -1,4 +1,4 @@
-# Files module
+# Files domain
 
 File and clipboard related helpers.
 
@@ -39,7 +39,7 @@ touch-f tool.sh
 
 ## Functions
 
-No functions in this module yet.
+No functions in this domain yet.
 
 ## Aliases
 

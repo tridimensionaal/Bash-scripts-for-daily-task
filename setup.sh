@@ -7,6 +7,7 @@ END_MARKER="# ---end_of_shellbox_setup---"
 shell_override=""
 rc_override=""
 dry_run=0
+load_examples=0
 tmp_file=""
 
 print_usage() {
@@ -18,9 +19,11 @@ print_usage() {
         fi
 
         cat <<'EOF'
-usage: setup.sh [--shell zsh|bash] [--rc-file PATH] [--dry-run]
+usage: setup.sh [--shell zsh|bash] [--rc-file PATH] [--dry-run] [--with-examples]
 
 set up shell initialization for this repo by sourcing setup/init
+
+--with-examples also loads the bundled example domains
 EOF
     } >&2
 }
@@ -46,6 +49,9 @@ parse_args() {
             ;;
         --dry-run)
             dry_run=1
+            ;;
+        --with-examples)
+            load_examples=1
             ;;
         *)
             print_usage "unknown argument: $1"
@@ -226,12 +232,16 @@ resolve_target() {
 
 quote_source_path() {
     local value=$1
+    local init_arg=" --domains-only"
 
     value=${value//\\/\\\\}
     value=${value//\"/\\\"}
     value=${value//\$/\\\$}
     value=${value//\`/\\\`}
-    printf 'source "%s"\n' "$value"
+    if ((load_examples)); then
+        init_arg=" --with-examples"
+    fi
+    printf 'source "%s"%s\n' "$value" "$init_arg"
 }
 
 print_managed_block() {
@@ -286,6 +296,11 @@ install_block() {
     local resolved_path
     local target_dir
     local rendered_state
+    local mode="domains-only"
+
+    if ((load_examples)); then
+        mode="with-examples"
+    fi
 
     resolved_path=$(resolve_target "$logical_path") || return $?
     target_dir=$(dirname "$resolved_path")
@@ -311,13 +326,14 @@ install_block() {
     if [[ -e "$resolved_path" ]] && cmp -s -- "$resolved_path" "$tmp_file"; then
         rm -f -- "$tmp_file"
         tmp_file=""
-        printf 'already configured %s\n' "$logical_path"
+        printf 'already configured %s (%s mode)\n' "$logical_path" "$mode"
         return 0
     fi
 
     mv -- "$tmp_file" "$resolved_path"
     tmp_file=""
-    printf 'updated %s to source %s\n' "$logical_path" "$init_path"
+    printf 'updated %s to source %s (%s mode)\n' \
+        "$logical_path" "$init_path" "$mode"
 }
 
 main() {
@@ -325,12 +341,18 @@ main() {
     local rc_file
     local repo_root
     local init_path
+    local domains_path
     local state
     local action
+    local mode="domains-only"
     local resolved_path
 
     trap cleanup_temp EXIT HUP INT TERM
     parse_args "$@"
+
+    if ((load_examples)); then
+        mode="with-examples"
+    fi
 
     if [[ -z "${HOME:-}" ]]; then
         print_usage "HOME is not set"
@@ -345,6 +367,7 @@ main() {
     rc_file=$(select_rc_file "$shell_name") || exit $?
     repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     init_path="$repo_root/setup/init"
+    domains_path="$repo_root/domains"
 
     if [[ ! -f "$init_path" ]]; then
         print_usage "init script not found: $init_path"
@@ -360,7 +383,8 @@ main() {
     if ((dry_run)); then
         action=add
         [[ "$state" == complete ]] && action=update
-        printf "would %s %s to source %s\n" "$action" "$rc_file" "$init_path"
+        printf "would %s %s to source %s (%s mode)\n" \
+            "$action" "$rc_file" "$init_path" "$mode"
         if [[ -L "$rc_file" ]]; then
             resolved_path=$(resolve_target "$rc_file") || exit $?
             printf 'resolved symlink target %s\n' "$resolved_path"
@@ -368,6 +392,7 @@ main() {
         return 0
     fi
 
+    mkdir -p "$domains_path"
     install_block "$rc_file" "$init_path" "$state"
 }
 

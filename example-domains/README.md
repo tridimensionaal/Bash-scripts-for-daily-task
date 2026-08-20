@@ -1,8 +1,9 @@
-# Modules
+# Example domains
 
-Modules organize helpers by domain. Each module can include scripts, functions, and aliases.
+These are the domains from my own shell setup. Each one can include scripts,
+functions, and aliases, and can be copied into `domains/` as a starting point.
 
-## Available modules
+## Available domains
 - [files](./files/README.md): file and clipboard helpers.
 - [git](./git/README.md): shortcuts for common Git commands.
 - [navigation](./navigation/README.md): filesystem navigation helpers.
