@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+print_usage() {
+    local extra_message="${1:-}"
+
+    {
+        if [[ -n "$extra_message" ]]; then
+            printf '%s\n\n' "$extra_message"
+        fi
+
+        cat <<'EOF'
+usage: tmux-main
+
+create or connect to the main tmux session
+
+the initial layout contains:
+  window 0  htop
+  window 1  shell in the current directory
+
+when already inside tmux, exit without creating or switching sessions
+EOF
+    } >&2
+}
+
+connect_session() {
+    local session_name="$1"
+
+    tmux attach-session -t "=$session_name"
+}
+
+main() {
+    local session_name="main"
+    local start_dir="$PWD"
+    local shell_window
+
+    case "${1:-}" in
+    -h | --help)
+        print_usage
+        return 0
+        ;;
+    '') ;;
+    *)
+        print_usage "unknown argument: $1"
+        return 2
+        ;;
+    esac
+
+    if [[ $# -gt 1 ]]; then
+        print_usage "too many arguments"
+        return 2
+    fi
+
+    if [[ -n "${TMUX:-}" ]]; then
+        printf '%s\n' "tmux-main: already inside tmux"
+        return 0
+    fi
+
+    if ! command -v tmux >/dev/null 2>&1; then
+        print_usage "tmux not found in PATH"
+        return 127
+    fi
+
+    if tmux has-session -t "=$session_name" 2>/dev/null; then
+        connect_session "$session_name"
+        return
+    fi
+
+    if ! command -v htop >/dev/null 2>&1; then
+        print_usage "htop not found in PATH"
+        return 127
+    fi
+
+    tmux new-session -d -s "$session_name" -n htop -c "$start_dir" htop
+    shell_window=$(
+        tmux new-window -d -P -F '#{window_id}' \
+            -t "$session_name:" -c "$start_dir"
+    )
+    tmux select-window -t "$shell_window"
+
+    connect_session "$session_name"
+}
+
+main "$@"
