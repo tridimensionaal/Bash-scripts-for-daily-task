@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+# Remove the old alias when this file is sourced in an existing shell.
+unalias gd 2>/dev/null || true
+
+gd() {
+    case "${1:-}" in
+    --no-pager)
+        shift
+        command git --no-pager diff "$@"
+        ;;
+    *)
+        command git diff "$@"
+        ;;
+    esac
+}

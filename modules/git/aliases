@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+alias gs='git status'
+alias gp='git push'
+alias gpl='git pull --ff-only'
+alias gdiscard='git restore --worktree --'
