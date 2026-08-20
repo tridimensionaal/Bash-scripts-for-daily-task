@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+pj() {
+    local target="$HOME/projects"
+
+    case "$#" in
+    0) ;;
+    1) target="$target/$1" ;;
+    *)
+        printf 'usage: pj [PROJECT]\n' >&2
+        return 2
+        ;;
+    esac
+
+    if [[ ! -d "$target" ]]; then
+        printf 'pj: directory not found: %s\n' "$target" >&2
+        return 1
+    fi
+
+    builtin cd -- "$target"
+}
+
+if [[ -n "${ZSH_VERSION:-}" ]] && command -v compdef >/dev/null 2>&1; then
+    _pj() {
+        ((CURRENT == 2)) && _files -/ -W "$HOME/projects"
+    }
+
+    compdef _pj pj
+fi
