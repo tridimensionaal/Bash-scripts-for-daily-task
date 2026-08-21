@@ -1,4 +1,4 @@
-# Grep module
+# Grep domain
 
 Small `grep`-based helpers.
 

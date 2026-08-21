@@ -1,4 +1,4 @@
-# Git module
+# Git domain
 
 Short helpers for common Git commands.
 

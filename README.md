@@ -1,87 +1,141 @@
 # Shellbox
 
-A Zsh-first collection of scripts, functions, and aliases for everyday tasks.
+A small framework for organizing Zsh aliases, functions, and scripts into
+domains.
 
+It uses regular shell files and one small loader, so the whole setup is easy to
+inspect.
 
-## Index
-- [Project description](#project-description)
-- [Project structure](#project-structure)
-  - [modules/](#modules)
-    - [scripts/](#scripts)
-    - [functions/](#functions)
-    - [aliases/](#aliases)
-  - [Setup/](#setup)
-- [How to setup](#how-to-setup)
+## How it works
 
----
+```text
+.zshrc -> setup/init -> domains -> aliases + functions + scripts
+```
 
-## Project description
+`setup.sh` adds one source line to `.zshrc`. The init script then:
 
-Shellbox is a personal toolkit of small shell helpers organized by topic. Zsh
-is the primary interactive environment, so functions and aliases are designed
-with Zsh use in mind. Existing helpers remain compatible with Bash where that
-does not add meaningful complexity.
+- sources aliases and functions;
+- links scripts into `bin/`; and
+- adds `bin/` to `PATH`.
 
-Standalone commands currently use Bash as their interpreter. They run normally
-from Zsh and do not depend on the user's interactive shell.
+That is the whole mechanism. There is no plugin manager or manifest.
 
+## Domains
 
+Shellbox has two domain directories:
 
-## Project structure
+- `domains/` contains local helpers and is ignored by Git.
+- `example-domains/` contains the helpers I use on my machines.
 
-### modules/
+Only `domains/` is loaded by default. With `--with-examples`, the example
+domains load first and the local domains load afterward.
 
-Each module groups related helpers by domain (e.g., `files/`, `python/`). modules can include:
-
-- `scripts/`: Executable standalone programs, currently written in Bash.
-- `functions/`: Shell files meant to be sourced. They define functions you can call from Zsh.
-- `aliases/`: A plain file with `alias ...` entries, sourced into your shell.
-
-**Script vs function vs alias**
-- **script**: Invokes a new shell/process; good for reusable commands and tools.
-- **function**: Runs in the current shell context; can share shell state and be used in pipelines.
-- **alias**: A short text substitution; best for simple shorthands.
-
-For more details about the current modules see [modules/README.md](./modules/README.md).
-
-### setup/
-
-Contains the initialization script `setup/init`, which:
-- detects the repo root and sets `SHELLBOX_DIR`,
-- ensures `bin/` exists and is on `PATH`,
-- symlinks module scripts into `bin/`,
-- sources module functions and aliases.
-
-This file is meant to be sourced by your shell. The `setup.sh` script wires that into your shell startup file.
-
----
-
-## How to setup
-
-Run the setup script once:
+## Setup
 
 ```sh
+git clone https://github.com/tridimensionaal/shellbox.git "$HOME/.shellbox"
+cd "$HOME/.shellbox"
 ./setup.sh
 ```
 
-The script detects your current shell and updates its startup file to source
-`setup/init`. It keeps using an existing managed block, so rerunning it is safe.
+Setup creates `domains/` and adds this block to `.zshrc`:
 
-For Zsh, the active target is `${ZDOTDIR:-$HOME}/.zshrc`. When Zsh uses a
-non-default `ZDOTDIR` and neither possible file has a managed block, setup asks
-whether to update the active file or the compatibility file at `~/.zshrc`.
+```zsh
+# ---start_of_shellbox_setup---
+# managed by Shellbox (do not edit inside this block)
+source "/path/to/shellbox/setup/init" --domains-only
+# ---end_of_shellbox_setup---
+```
 
-Useful overrides:
+Open a new shell after setup.
+
+To also load `example-domains/`:
+
+```sh
+./setup.sh --with-examples
+```
+
+Running setup again switches between the two modes without adding another
+block.
+
+## Create a domain
+
+A domain is just a directory:
+
+```text
+domains/docker/
+├── aliases
+├── functions/
+│   └── dclean
+└── scripts/
+    └── docker-summary
+```
+
+`aliases` contains normal alias definitions:
+
+```zsh
+alias dps='docker ps'
+```
+
+Files under `functions/` have a shebang and define a function:
+
+```zsh
+#!/usr/bin/env zsh
+
+dclean() {
+    docker container prune
+}
+```
+
+Files under `scripts/` are standalone scripts with a shebang. Their filenames
+become commands on `PATH`:
+
+```bash
+#!/usr/bin/env bash
+
+docker system df
+```
+
+No registration is needed. Open a new shell and the domain is loaded.
+
+An example domain can also be copied as a starting point:
+
+```sh
+cp -R example-domains/git domains/git
+```
+
+The included domains cover files, Git, grep, navigation, Python, and tmux. See
+[example-domains/README.md](./example-domains/README.md) for the commands and
+requirements.
+
+## Keep local domains in Git
+
+`domains/` is ignored by the main repo. It can be its own Git repository:
+
+```sh
+git -C domains init
+git -C domains add .
+git -C domains commit -m "Add my shell domains"
+```
+
+Since `domains/` is ignored, deleting the Shellbox directory also deletes those
+local files unless they are stored somewhere else.
+
+## Other setup options
 
 ```sh
 ./setup.sh --dry-run
-./setup.sh --shell zsh
 ./setup.sh --rc-file "$HOME/.zshrc"
+./setup.sh --shell bash
 ```
 
-`--rc-file` is useful when a tracked XDG Zsh configuration sources a machine-local `~/.zshrc`: the integration stays out of the dotfiles repository. In scripts or other non-interactive environments, use `--rc-file` whenever the two Zsh targets are ambiguous.
+Zsh uses `${ZDOTDIR:-$HOME}/.zshrc` by default. Bash support is kept where it
+stays simple, but Zsh is the main target.
 
-Bash remains supported for the existing cross-shell helpers. Select it
-explicitly with `./setup.sh --shell bash`; its default target is `~/.bashrc`.
+## Upgrading from the old layout
 
-Open a new shell, or source the selected startup file, to apply the changes.
+The old version loaded helpers from `modules/`. Run
+`./setup.sh --with-examples` to keep loading the included helpers, then move any
+personal domains left in `modules/` into `domains/`.
+
+Old generated script links are cleaned the next time Shellbox loads.

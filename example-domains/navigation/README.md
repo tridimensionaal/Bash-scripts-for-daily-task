@@ -1,4 +1,4 @@
-# Navigation module
+# Navigation domain
 
 Helpers for moving around the filesystem.
 

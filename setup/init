@@ -39,7 +39,7 @@ set_shellbox_dir() {
 }
 
 ensure_bin_path() {
-    bin_dir="$SHELLBOX_DIR/bin"
+    local bin_dir="$SHELLBOX_DIR/bin"
     # ensure a bin directory exists for symlinked scripts
     if [[ ! -d "$bin_dir" ]]; then
         mkdir -p "$bin_dir"
@@ -56,19 +56,42 @@ ensure_bin_path() {
     export PATH
 }
 
-link_scripts() {
-    bin_dir="$SHELLBOX_DIR/bin"
+ensure_domains_dir() {
+    local domains_dir="$SHELLBOX_DIR/domains"
 
-    if [[ -d "$bin_dir" ]]; then
-        # remove broken/outdated symlinks that point to known script paths.
-        while IFS= read -r -d '' link; do
-            target="$(readlink "$link" 2>/dev/null || true)"
-            case "$target" in
-            "$SHELLBOX_DIR"/modules/*/scripts/* | "$SHELLBOX_DIR"/scripts/*)
-                rm -f "$link"
-                ;;
-            esac
-        done < <(find "$bin_dir" -maxdepth 1 -type l -print0)
+    if [[ ! -d "$domains_dir" ]]; then
+        mkdir -p "$domains_dir"
+    fi
+}
+
+clear_script_links() {
+    local bin_dir="$SHELLBOX_DIR/bin"
+    local link
+    local target
+
+    # Remove generated links, including links from the old modules/ layout.
+    while IFS= read -r -d '' link; do
+        target="$(readlink "$link" 2>/dev/null || true)"
+        case "$target" in
+        "$SHELLBOX_DIR"/example-domains/*/scripts/* | \
+            "$SHELLBOX_DIR"/domains/*/scripts/* | \
+            "$SHELLBOX_DIR"/modules/*/scripts/* | \
+            "$SHELLBOX_DIR"/scripts/*)
+            rm -f "$link"
+            ;;
+        esac
+    done < <(find "$bin_dir" -maxdepth 1 -type l -print0)
+}
+
+link_scripts() {
+    local domains_dir=$1
+    local bin_dir="$SHELLBOX_DIR/bin"
+    local script
+    local first
+    local script_name
+
+    if [[ ! -d "$domains_dir" ]]; then
+        return 0
     fi
 
     # link scripts into bin.
@@ -81,11 +104,20 @@ link_scripts() {
             ln -sfn "$script" "$bin_dir/$script_name"
             ;;
         esac
-    done < <(find "$SHELLBOX_DIR/modules" -type f -path '*/scripts/*' -print0)
+    done < <(find "$domains_dir" -type d -name .git -prune -o \
+        -type f -path '*/scripts/*' -print0)
 
 }
 
 source_functions() {
+    local domains_dir=$1
+    local func_file
+    local first
+
+    if [[ ! -d "$domains_dir" ]]; then
+        return 0
+    fi
+
     # source functions files (only source shebang files)
     while IFS= read -r -d '' func_file; do
         IFS= read -r first <"$func_file" || continue
@@ -95,31 +127,60 @@ source_functions() {
             . "$func_file"
             ;;
         esac
-    done < <(find "$SHELLBOX_DIR/modules" -type f -path '*/functions/*' -print0)
+    done < <(find "$domains_dir" -type d -name .git -prune -o \
+        -type f -path '*/functions/*' -print0)
 }
 
 source_aliases() {
+    local domains_dir=$1
+    local alias_file
+
+    if [[ ! -d "$domains_dir" ]]; then
+        return 0
+    fi
+
     # source aliases files
     while IFS= read -r -d '' alias_file; do
         # shellcheck source=/dev/null
         . "$alias_file"
-    done < <(find "$SHELLBOX_DIR/modules" -type f -name 'aliases' -print0)
+    done < <(find "$domains_dir" -type d -name .git -prune -o \
+        -type f -name 'aliases' -print0)
+}
+
+load_domains() {
+    local domains_dir=$1
+
+    link_scripts "$domains_dir"
+    source_functions "$domains_dir"
+    source_aliases "$domains_dir"
 }
 
 main() {
+    local load_examples=0
+
+    if [[ "$#" -eq 1 ]]; then
+        case "${1:-}" in
+        --with-examples) load_examples=1 ;;
+        --domains-only) ;;
+        esac
+    fi
+
     if ! set_shellbox_dir; then
         return 1
     fi
 
-    if [[ ! -d "$SHELLBOX_DIR/modules" ]]; then
+    if [[ ! -d "$SHELLBOX_DIR/example-domains" ]]; then
         return 1
     fi
 
     # wire up PATH, links, and shell helpers.
+    ensure_domains_dir || return $?
     ensure_bin_path
-    link_scripts
-    source_functions
-    source_aliases
+    clear_script_links
+    if ((load_examples)); then
+        load_domains "$SHELLBOX_DIR/example-domains"
+    fi
+    load_domains "$SHELLBOX_DIR/domains"
 
 }
 

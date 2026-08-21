@@ -1,4 +1,4 @@
-# Tmux module
+# Tmux domain
 
 Helpers for starting tmux workflows.
 
