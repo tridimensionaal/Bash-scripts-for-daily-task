@@ -11,7 +11,12 @@ load_examples=0
 tmp_file=""
 
 print_usage() {
-    extra_message="${1:-}"
+    local extra_message="${1:-}"
+    local output_fd=1
+
+    if [[ -n "$extra_message" ]]; then
+        output_fd=2
+    fi
 
     {
         if [[ -n "$extra_message" ]]; then
@@ -19,13 +24,13 @@ print_usage() {
         fi
 
         cat <<'EOF'
-usage: setup.sh [--shell zsh|bash] [--rc-file PATH] [--dry-run] [--with-examples]
+usage: setup.sh [--shell zsh|bash] [--rc-file PATH] [--dry-run] [--with-examples] [--help]
 
 set up shell initialization for this repo by sourcing setup/init
 
 --with-examples also loads the bundled example domains
 EOF
-    } >&2
+    } >&"$output_fd"
 }
 
 parse_args() {
@@ -52,6 +57,10 @@ parse_args() {
             ;;
         --with-examples)
             load_examples=1
+            ;;
+        --help)
+            print_usage
+            exit 0
             ;;
         *)
             print_usage "unknown argument: $1"

@@ -129,6 +129,9 @@ local files unless they are stored somewhere else.
 ./setup.sh --shell bash
 ```
 
+If you are unsure how to use `setup.sh`, run `./setup.sh --help` to see the
+available options.
+
 Zsh uses `${ZDOTDIR:-$HOME}/.zshrc` by default. Bash support is kept where it
 stays simple, but Zsh is the main target.
 
