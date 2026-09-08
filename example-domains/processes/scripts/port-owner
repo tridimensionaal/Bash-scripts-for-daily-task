@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+print_usage() {
+    cat <<'USAGE'
+usage: port-owner PORT
+
+Show TCP and UDP sockets using a local port, including process names and PIDs.
+PORT must be a number from 1 to 65535. Supports IPv4 and IPv6.
+USAGE
+}
+
+main() {
+    local port="${1:-}"
+
+    if [[ $# -eq 1 && ( "$port" == -h || "$port" == --help ) ]]; then
+        print_usage
+        return 0
+    fi
+
+    if [[ $# -ne 1 || ! "$port" =~ ^[0-9]{1,5}$ ]] ||
+        (( 10#$port < 1 || 10#$port > 65535 )); then
+        print_usage >&2
+        return 2
+    fi
+
+    if ! command -v ss >/dev/null 2>&1; then
+        printf 'port-owner: ss not found in PATH (requires iproute2)\n' >&2
+        return 127
+    fi
+
+    # Match the local port, including listeners and connected UDP sockets.
+    ss -antup "sport = :$((10#$port))"
+}
+
+main "$@"

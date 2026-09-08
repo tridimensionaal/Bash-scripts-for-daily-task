@@ -1,7 +1,8 @@
 # Processes domain
 
-Shell helpers for stopping an unresponsive program and its children.
-Requires Bash and Linux `pgrep` (procps-ng, with `--ignore-ancestors` support).
+Shell helpers for inspecting and managing processes.
+The termination helper requires Bash and Linux `pgrep` (procps-ng, with
+`--ignore-ancestors` support).
 
 ## Firefox
 
@@ -31,6 +32,23 @@ its ancestors (including the calling shell). It recursively finds children with
 `pgrep -P`, collects their PIDs, then signals children before parents. Children
 created after collection and detached helpers with different names may be
 missed. It sends the signal without waiting or automatically escalating.
+
+## Port owner
+
+Show which processes use a local TCP or UDP port:
+
+```sh
+port-owner 3000
+```
+
+Requires Bash and `ss` from iproute2. The output includes the protocol, socket
+state, local and peer addresses, and available process names and PIDs. It covers
+IPv4 and IPv6, TCP listeners and connections, and both unconnected and connected
+UDP sockets. Connections using the number only as a remote port are excluded.
+
+Process details belonging to other users may require elevated permissions. An
+unused port produces only the column headings and exits successfully. Run
+`port-owner --help` for usage.
 
 ## Enable
 
