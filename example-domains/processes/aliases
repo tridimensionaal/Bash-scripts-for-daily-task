@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+alias firefox-kill="kill-program 'firefox(-bin|-esr)?'"

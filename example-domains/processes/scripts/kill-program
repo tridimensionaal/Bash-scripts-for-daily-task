@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+print_usage() {
+    cat <<'USAGE'
+usage: kill-program [--force] NAME_PATTERN
+
+Stop your matching processes and their children with SIGTERM.
+NAME_PATTERN is a regular expression matched against the whole process name.
+Use --force to send SIGKILL instead; unsaved work may be lost.
+USAGE
+}
+
+collect_tree() {
+    local pid=$1 child
+
+    while IFS= read -r child; do
+        collect_tree "$child"
+    done < <(pgrep -u "$EUID" -P "$pid")
+
+    printf '%s\n' "$pid"
+}
+
+main() {
+    local signal=TERM pattern='' argument roots pids pid result=0
+
+    for argument in "$@"; do
+        case "$argument" in
+        --force) signal=KILL ;;
+        -h | --help)
+            print_usage
+            return 0
+            ;;
+        -* | '')
+            print_usage >&2
+            return 2
+            ;;
+        *)
+            [[ -z "$pattern" ]] || {
+                print_usage >&2
+                return 2
+            }
+            pattern=$argument
+            ;;
+        esac
+    done
+    [[ -n "$pattern" ]] || {
+        print_usage >&2
+        return 2
+    }
+
+    # Exclude this script and its ancestors, including the calling shell.
+    roots=$(pgrep -A -u "$EUID" -x -- "$pattern") || {
+        result=$?
+        [[ "$result" -eq 1 ]] || return "$result"
+        printf 'No matching processes.\n'
+        return 0
+    }
+
+    # Collect all descendants before signaling any parent.
+    pids=$(
+        while IFS= read -r pid; do
+            collect_tree "$pid"
+        done <<<"$roots"
+    )
+
+    while IFS= read -r pid; do
+        # A process may already have exited after another was terminated.
+        if kill -0 -- "$pid" 2>/dev/null; then
+            kill -s "$signal" -- "$pid" || result=1
+        fi
+    done <<<"$pids"
+    return "$result"
+}
+
+main "$@"

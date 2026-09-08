@@ -104,7 +104,7 @@ An example domain can also be copied as a starting point:
 cp -R example-domains/git domains/git
 ```
 
-The included domains cover files, Git, grep, navigation, Python, and tmux. See
+The included domains cover files, Git, grep, navigation, processes, Python, and tmux. See
 [example-domains/README.md](./example-domains/README.md) for the commands and
 requirements.
 
